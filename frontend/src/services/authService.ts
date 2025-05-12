@@ -31,7 +31,7 @@ export const register = async (
     password,
     email,
     cpf,
-    tipo, // Tipo do usuário (1 = Cidadão, 2 = Policial, 3 = Agente de Segurança, 4 = Investigador, 5 = Gestor de Segurança Pública)
+    tipo,
   }
 
   // Adicionando campos específicos dependendo do tipo de usuário
@@ -53,7 +53,6 @@ export const register = async (
   return response.data
 }
 
-// Função para buscar dados do usuário autenticado
 export const fetchUserData = async () => {
   const token = getAuthToken()
 
@@ -61,7 +60,7 @@ export const fetchUserData = async () => {
     try {
       const response = await api.get('/user', {
         headers: {
-          Authorization: 'Bearer ' + token, // Adicionando o token ao cabeçalho
+          Authorization: 'Bearer ' + token,
         },
       })
       return response.data
@@ -71,5 +70,25 @@ export const fetchUserData = async () => {
     }
   } else {
     throw new Error('Token de autenticação não encontrado.')
+  }
+}
+
+export const forgotPassword = async (emailCpf: string) => {
+  try {
+    const response = await api.post('/forgotPassword', { emailCpf })
+    return response.data
+  } catch (error) {
+    console.error('Erro ao enviar email de redefinição de senha:', error)
+    throw error
+  }
+}
+
+export const resetPassword = async (token: string, novaSenha: string) => {
+  try {
+    const response = await api.post('/reset-password', { token, novaSenha })
+    return response.data
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error)
+    throw error
   }
 }

@@ -100,7 +100,7 @@ div.layout
         nav.nav-buttons
           div(v-if="!isLoggedIn")
             RouterLink.nav-button(to="/login" @click="fecharMenu") Login
-            RouterLink.nav-button.primary(to="/register" @click="fecharMenu") Cadastre-se
+            RouterLink.nav-button.primary.ml(to="/register" @click="fecharMenu") Cadastre-se
           div(v-if="isLoggedIn" class="nav-user-wrapper")
             div.nav-user-info
               span.nav-user-name {{ userName }}
@@ -148,7 +148,7 @@ body {
 
 .nav-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 4rem;
 }
 
 .nav-user-name {
@@ -408,5 +408,9 @@ body {
   text-align: center;
   font-size: 0.85rem;
   border-bottom: 1px solid #e0b4b4;
+}
+
+.nav-button.ml {
+  margin-left: 0.5rem;
 }
 </style>

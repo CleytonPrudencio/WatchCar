@@ -1,22 +1,23 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.RegisterRequest;
+import com.system.watchCar.entity.PasswordResetToken;
 import com.system.watchCar.entity.RoleType;
 import com.system.watchCar.entity.Role;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.enums.TipoTemplateEmail;
 import com.system.watchCar.repository.RoleRepository;
+import com.system.watchCar.repository.TokenRepository;
 import com.system.watchCar.repository.UserRepository;
 import com.system.watchCar.security.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class AuthenticationService {
@@ -32,14 +33,16 @@ public class AuthenticationService {
     private final JwtTokenUtil jwtTokenUtil;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
+    private final TokenRepository tokenRepository;
 
     @Autowired
-    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService) {
+    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService, TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenUtil = jwtTokenUtil;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
+        this.tokenRepository = tokenRepository;
     }
 
     public String authenticate(String username, String password) {
@@ -156,6 +159,65 @@ public class AuthenticationService {
     public User getUserDetails(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User  not found"));
+    }
+
+    public void forgotPassword(String emailCpf) {
+            User user;
+
+            if (emailCpf.contains("@")) {
+                user = userRepository.findByEmail(emailCpf)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuário com esse e-mail não encontrado"));
+            } else {
+                user = userRepository.findByCpf(emailCpf)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuário com esse CPF não encontrado"));
+            }
+
+            // Gera token único
+            String token = UUID.randomUUID().toString();
+
+            // Salva o token com expiração (por ex: 1h)
+            PasswordResetToken resetToken = new PasswordResetToken(
+                    token,
+                    user,
+                    LocalDateTime.now().plusHours(1),
+                    false // usado?
+            );
+
+            tokenRepository.save(resetToken);
+
+        Map<String, Object> usuario = new HashMap<>();
+        usuario.put("nome", user.getUsername());
+        usuario.put("email", user.getEmail());
+        usuario.put("cpf", user.getCpf());
+        usuario.put("Permissao", user.getRole().getName());
+        usuario.put("token", token);
+        usuario.put("usuario", usuario);
+
+        emailService.enviarEmailComTemplate(
+                user.getEmail(),
+                TipoTemplateEmail.ESQUECI_SENHA,
+                usuario
+        );
+    }
+
+    public boolean resetarSenha(String token, String novaSenha) {
+        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
+
+        if (tokenOpt.isEmpty()) return false;
+
+        PasswordResetToken resetToken = tokenOpt.get();
+
+        if (resetToken.isUsed() || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(novaSenha));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        tokenRepository.save(resetToken);
+        return true;
     }
 
 }
