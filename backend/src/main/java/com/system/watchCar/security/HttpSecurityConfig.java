@@ -54,6 +54,8 @@ public class HttpSecurityConfig {
                         "/api/login",
                         "/api/register",
                         "/api/artigos",
+                        "/api/forgotPassword",
+                        "/api/reset-password",
                         "/api/ocorrencias/criar",
                         "/h2-console/**/**",
                         "/swagger-ui/**",
