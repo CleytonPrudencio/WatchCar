@@ -108,11 +108,13 @@ div.layout
           div(v-if="!isLoggedIn")
             RouterLink.nav-button(to="/login" @click="fecharMenu") Login
             RouterLink.nav-button.primary.ml(to="/register" @click="fecharMenu") Cadastre-se
-          div(v-if="isLoggedIn" class="nav-user-wrapper")
-            div.nav-user-info
-              span.nav-user-name {{ userName }}
-              div.nav-user-role {{ perfilUsuarioFormatado }}
-            button.nav-button.primary(@click="() => { handleLogout(); fecharMenu() }") Sair
+        div(v-if="isLoggedIn" class="nav-user-wrapper")
+          div.nav-user-info
+            span.nav-user-name {{ userName }}
+            div.nav-user-role {{ perfilUsuarioFormatado }}
+            RouterLink.nav-button.small-button.ml(to="/meus-dados" @click="fecharMenu") Meus Dados
+          button.nav-button.primary(@click="() => { handleLogout(); fecharMenu() }") Sair
+
 
 
   main.main-content
@@ -300,6 +302,7 @@ body {
 
 .nav-user-info {
   display: flex;
+  align-items: center; /* Centraliza tudo */
   flex-direction: column;
 }
 
@@ -419,5 +422,28 @@ body {
 
 .nav-button.ml {
   margin-left: 0.5rem;
+}
+
+.small-button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border: 1px solid #42b983;
+  color: #42b983;
+  background-color: white;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 4%;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  display: inline-block;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.small-button:hover {
+  background-color: #42b983;
+  color: white;
 }
 </style>

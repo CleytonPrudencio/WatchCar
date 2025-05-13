@@ -92,3 +92,61 @@ export const resetPassword = async (token: string, novaSenha: string) => {
     throw error
   }
 }
+
+// Atualizar dados do usuário
+export const updateUserData = async (
+  id: string,
+  username: string,
+  email: string,
+  cpf: string,
+  tipo: number, // Tipo do usuário (1, 2, 3, 4, 5)
+  departamento: string,
+  cargo: string,
+  delegacia?: string,
+  distintivo?: string,
+  ra?: string,
+) => {
+  const token = getAuthToken()
+
+  if (!token) {
+    throw new Error('Token de autenticação não encontrado.')
+  }
+
+  // Montando o corpo da requisição de acordo com o tipo de usuário
+  const body: any = {
+    id,
+    username,
+    email,
+    cpf,
+    tipo,
+    departamento,
+    cargo,
+  }
+
+  // Adicionando campos específicos dependendo do tipo de usuário
+  if (tipo === 2 || tipo === 3 || tipo === 4) {
+    // Se for Policial, Agente de Segurança ou Investigador
+    body.delegacia = delegacia
+    body.distintivo = distintivo
+    body.ra = ra
+  }
+
+  if (tipo === 5) {
+    // Se for Gestor de Segurança Pública
+    body.departamento = departamento
+    body.cargo = cargo
+  }
+
+  try {
+    const response = await api.put(`/usuario/update/${id}`, body, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    return response
+  } catch (error) {
+    console.error('Erro ao atualizar dados do usuário:', error)
+    throw error
+  }
+}

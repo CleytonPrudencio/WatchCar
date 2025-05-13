@@ -1,6 +1,7 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.RegisterRequest;
+import com.system.watchCar.dto.UserUpdateRequest;
 import com.system.watchCar.entity.PasswordResetToken;
 import com.system.watchCar.entity.RoleType;
 import com.system.watchCar.entity.Role;
@@ -217,6 +218,41 @@ public class AuthenticationService {
 
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
+        return true;
+    }
+
+    public boolean updateUserData(String id, UserUpdateRequest userUpdateRequest) {
+        User user = userRepository.findById(Long.valueOf(id)).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        RoleType roleType = switch (userUpdateRequest.getTipo()) {
+            case 1 -> RoleType.PUBLICO;
+            case 2 -> RoleType.POLICIAL;
+            case 3 -> RoleType.AGENTE_DE_SEGURANCA;
+            case 4 -> RoleType.INVESTIGADOR;
+            case 5 -> RoleType.GESTOR_DE_SEGURANCA_PUBLICA;
+            default -> throw new IllegalArgumentException("Tipo de usuário inválido.");
+        };
+        Role role = roleRepository.findByName(roleType)
+                .orElseThrow(() -> new RuntimeException("Papel não encontrado: " + roleType));
+        user.setUsername(userUpdateRequest.getUsername());
+        user.setEmail(userUpdateRequest.getEmail());
+        user.setCpf(userUpdateRequest.getCpf());
+        user.setRole(role);
+        user.setDepartamento(userUpdateRequest.getDepartamento());
+        user.setCargo(userUpdateRequest.getCargo());
+
+        // Adicionando campos adicionais dependendo do tipo de usuário
+        if (userUpdateRequest.getTipo() == 2 || userUpdateRequest.getTipo() == 3 || userUpdateRequest.getTipo() == 4) {
+            user.setDelegate(userUpdateRequest.getDelegacia());
+            user.setBadge(userUpdateRequest.getDistintivo());
+            user.setRa(userUpdateRequest.getRa());
+        }
+
+        // Se for Gestor de Segurança Pública, mantemos os campos
+        if (userUpdateRequest.getTipo() == 5) {
+            // Gestor de segurança pública, por enquanto, não requer mais campos
+        }
+
+        userRepository.save(user);
         return true;
     }
 
