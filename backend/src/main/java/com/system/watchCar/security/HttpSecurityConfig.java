@@ -40,7 +40,7 @@ public class HttpSecurityConfig {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
-    @Value("${frontend.url}")  // Pega o valor da propriedade do application.properties
+    @Value("${app.frontend.url}")  // Pega o valor da propriedade do application.properties
     private String frontendUrl;
 
     // Configurar as regras de segurança HTTP
