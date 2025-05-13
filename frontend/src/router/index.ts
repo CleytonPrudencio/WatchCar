@@ -6,6 +6,7 @@ import Sobre from '../views/Sobre.vue'
 import Ocorrencias from '../views/Ocorrencias.vue'
 import Denuncia from '../views/Denuncia.vue'
 import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
+import { fetchUserData } from '@/services/authService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +54,27 @@ router.beforeEach((to, from, next) => {
 
   if (requiresAuth && !token) {
     return next({ name: 'login' })
+  }
+
+  next()
+})
+
+router.beforeEach(async (to, from, next) => {
+  const token = localStorage.getItem('authToken')
+
+  if (token) {
+    try {
+      const userData = await fetchUserData() // Atualiza userName, userPerfil, userId
+      localStorage.setItem('userName', userData.username)
+      localStorage.setItem('userPerfil', userData.role.name)
+      localStorage.setItem('userId', userData.id)
+      window.dispatchEvent(new Event('storage'))
+    } catch (err) {
+      console.error('Erro ao buscar dados do usuário', err)
+      // Token inválido? Limpa e redireciona:
+      localStorage.clear()
+      return next('/login')
+    }
   }
 
   next()

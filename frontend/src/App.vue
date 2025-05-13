@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted } from 'vue'
+import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 
@@ -11,11 +11,18 @@ const userName = ref(localStorage.getItem('userName') || 'Usuário')
 const perfilUsuario = ref('PUBLICO')
 
 onMounted(() => {
-  const role = localStorage.getItem('userPerfil')
-  if (role) {
-    perfilUsuario.value = role
-  }
+  window.addEventListener('storage', updateUserData)
 })
+
+onUnmounted(() => {
+  window.removeEventListener('storage', updateUserData)
+})
+
+function updateUserData() {
+  authToken.value = localStorage.getItem('authToken')
+  userName.value = localStorage.getItem('userName') || 'Usuário'
+  perfilUsuario.value = localStorage.getItem('userPerfil') || 'PUBLICO'
+}
 
 const roleMap: Record<string, string> = {
   PUBLICO: 'Público',
