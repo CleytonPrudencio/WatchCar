@@ -48,7 +48,7 @@ public class HttpSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()) // Usando CORS nativo
+                .cors()  // O Spring Security usará as configurações definidas no application.properties
                 .and()
                 .headers().frameOptions().disable()
                 .and()
@@ -137,11 +137,17 @@ public class HttpSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));  // Seu domínio de front-end
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // Configuração explícita para permitir o acesso do frontend
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));  // O endereço do seu frontend
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowCredentials(true);  // Permite enviar cookies e cabeçalhos de autenticação entre domínios
+
+        // Cria a configuração de CORS
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);  // Aplica a configuração a todas as requisições
         return source;
     }
+
+
 }

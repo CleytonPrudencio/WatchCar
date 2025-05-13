@@ -7,6 +7,7 @@ import Ocorrencias from '../views/Ocorrencias.vue'
 import Denuncia from '../views/Denuncia.vue'
 import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
 import { fetchUserData } from '@/services/authService'
+import MeusDados from '../views/MeusDados.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,12 @@ const router = createRouter({
       path: '/redefinir-senha',
       name: 'PasswordReset',
       component: PasswordResetModal,
+    },
+    {
+      path: '/meus-dados',
+      name: 'meus-dados',
+      component: MeusDados,
+      meta: { requiresAuth: true },
     },
   ],
 })

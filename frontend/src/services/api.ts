@@ -14,11 +14,6 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Log de erro
-    console.log('erro 1', error)
-    console.log('error.response.status ', error.response?.status)
-    console.log('error.response ', error.response)
-
     // Verifica se é um erro 401 (não autorizado)
     if (error.response && error.response.status === 401) {
       // Mostra o toast de erro para a expiração da sessão
