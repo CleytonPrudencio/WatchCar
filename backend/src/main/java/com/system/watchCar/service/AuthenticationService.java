@@ -237,8 +237,7 @@ public class AuthenticationService {
         user.setEmail(userUpdateRequest.getEmail());
         user.setCpf(userUpdateRequest.getCpf());
         user.setRole(role);
-        user.setDepartamento(userUpdateRequest.getDepartamento());
-        user.setCargo(userUpdateRequest.getCargo());
+
 
         // Adicionando campos adicionais dependendo do tipo de usuário
         if (userUpdateRequest.getTipo() == 2 || userUpdateRequest.getTipo() == 3 || userUpdateRequest.getTipo() == 4) {
@@ -249,7 +248,8 @@ public class AuthenticationService {
 
         // Se for Gestor de Segurança Pública, mantemos os campos
         if (userUpdateRequest.getTipo() == 5) {
-            // Gestor de segurança pública, por enquanto, não requer mais campos
+            user.setDepartamento(userUpdateRequest.getDepartamento());
+            user.setCargo(userUpdateRequest.getCargo());
         }
 
         userRepository.save(user);
