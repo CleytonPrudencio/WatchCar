@@ -36,7 +36,7 @@
 import { ref, onMounted } from 'vue'
 import { Bar, Pie, Line } from 'vue-chartjs'
 import {
-  Chart as ChartJS,
+  Chart,
   Title,
   Tooltip,
   Legend,
@@ -48,13 +48,14 @@ import {
   PointElement,
   type ChartData,
 } from 'chart.js'
+
 import { obterTodasOcorrencias } from '@/services/ocorrenciasService'
 import Modal from '@/views/components/Modal.vue'
 import RelatorioPDF from '@/views/components/RelatorioPDF.vue'
 
 const relatorioPDF = ref<InstanceType<typeof RelatorioPDF> | null>(null)
 
-ChartJS.register(
+Chart.register(
   Title,
   Tooltip,
   Legend,
