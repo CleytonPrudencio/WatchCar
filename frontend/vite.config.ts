@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
@@ -10,12 +9,13 @@ export default defineConfig({
   plugins: [vue(), vueJsx(), vueDevTools()],
   build: {
     rollupOptions: {
-      external: ['vue-chartjs'],
+      external: ['vue-chartjs', 'chart.js'], // Adicionando chart.js como externa
     },
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'chart.js': 'chart.js/dist/chart.min.js', // Certificando que o chart.js seja resolvido corretamente
     },
   },
   preview: {
