@@ -232,16 +232,29 @@ function gerarPDF() {
     const chartHorariosBase64 = getChartBase64('horarios')
     const chartUsuariosBase64 = getChartBase64('usuarios')
 
+    // Use asserção de tipo (type assertion) para garantir que `labels` e `data` sejam do tipo correto
     relatorioPDF.value.gerarPDFPersonalizado({
-      artigos: { labels: dadosArtigos.value.labels, data: dadosArtigos.value.datasets[0].data },
-      status: { labels: dadosStatus.value.labels, data: dadosStatus.value.datasets[0].data },
-      horarios: { labels: dadosHorario.value.labels, data: dadosHorario.value.datasets[0].data },
-      usuarios: { labels: dadosUsuario.value.labels, data: dadosUsuario.value.datasets[0].data },
+      artigos: {
+        labels: (dadosArtigos.value.labels || []) as string[], // Assegura que seja um array de strings
+        data: (dadosArtigos.value.datasets[0]?.data || []) as number[], // Assegura que seja um array de números
+      },
+      status: {
+        labels: (dadosStatus.value.labels || []) as string[],
+        data: (dadosStatus.value.datasets[0]?.data || []) as number[],
+      },
+      horarios: {
+        labels: (dadosHorario.value.labels || []) as string[],
+        data: (dadosHorario.value.datasets[0]?.data || []) as number[],
+      },
+      usuarios: {
+        labels: (dadosUsuario.value.labels || []) as string[],
+        data: (dadosUsuario.value.datasets[0]?.data || []) as number[],
+      },
       charts: {
-        artigos: chartArtigosBase64,
-        status: chartStatusBase64,
-        horarios: chartHorariosBase64,
-        usuarios: chartUsuariosBase64,
+        artigos: chartArtigosBase64 || '', // Garantir que seja string vazia caso não haja base64
+        status: chartStatusBase64 || '',
+        horarios: chartHorariosBase64 || '',
+        usuarios: chartUsuariosBase64 || '',
       },
     })
   }
