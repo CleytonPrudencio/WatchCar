@@ -20,29 +20,26 @@ interface DadosRelatorio {
   horarios: ChartData
   usuarios: ChartData
   charts: {
-    artigos: Chart
-    status: Chart
-    horarios: Chart
-    usuarios: Chart
+    artigos: string // Base64 do gráfico
+    status: string // Base64 do gráfico
+    horarios: string // Base64 do gráfico
+    usuarios: string // Base64 do gráfico
   }
 }
-function gerarImagemGrafico(chart: Chart): string | null {
-  try {
-    const base64 = chart?.toBase64Image()
-    if (base64 && base64.startsWith('data:image')) {
-      return base64
-    }
+
+function gerarImagemGrafico(chart: Chart): string {
+  const base64 = chart?.toBase64Image() || ''
+  if (!base64.startsWith('data:image')) {
     console.error('Falha ao gerar imagem base64 do gráfico.')
-    return null
-  } catch (e) {
-    console.error('Erro ao converter gráfico para base64:', e)
-    return null
+    return '' // Retorna string vazia se o gráfico não for gerado corretamente
   }
+  return base64
 }
 
 defineExpose({
   gerarPDFPersonalizado,
 })
+
 function gerarPDFPersonalizado(dados: DadosRelatorio) {
   const docDefinition = {
     content: [
