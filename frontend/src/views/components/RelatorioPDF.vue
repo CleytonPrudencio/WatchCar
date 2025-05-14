@@ -2,7 +2,7 @@
   // Deixe vazio mesmo
 </template>
 <script setup lang="ts">
-import { Chart } from 'chart.js' // Apenas importe Chart
+import { Chart } from 'chart.js'
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import logoBase64 from '@/types/logo-base64.ts'
