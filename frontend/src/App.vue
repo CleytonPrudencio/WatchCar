@@ -8,8 +8,9 @@ const router = useRouter()
 // Ref reativa que controla o estado de autenticação
 const authToken = ref(localStorage.getItem('authToken'))
 const userName = ref(localStorage.getItem('userName') || 'Usuário')
-const perfilUsuario = ref('PUBLICO')
+const perfilUsuario = ref(localStorage.getItem('userPerfil') || 'PUBLICO')
 
+// Monitora mudanças no localStorage
 onMounted(() => {
   window.addEventListener('storage', updateUserData)
 })
@@ -18,12 +19,14 @@ onUnmounted(() => {
   window.removeEventListener('storage', updateUserData)
 })
 
+// Atualiza dados do usuário sempre que há alterações no localStorage
 function updateUserData() {
   authToken.value = localStorage.getItem('authToken')
   userName.value = localStorage.getItem('userName') || 'Usuário'
   perfilUsuario.value = localStorage.getItem('userPerfil') || 'PUBLICO'
 }
 
+// Mapeia os perfis para um formato legível
 const roleMap: Record<string, string> = {
   PUBLICO: 'Público',
   POLICIAL: 'Policial',
@@ -32,12 +35,18 @@ const roleMap: Record<string, string> = {
   GESTOR_DE_SEGURANCA_PUBLICA: 'Gestor de Segurança Pública',
 }
 
+// Computed reativo para o perfil formatado
 const perfilUsuarioFormatado = computed(() => {
   return roleMap[perfilUsuario.value] || perfilUsuario.value
 })
 
-// Computed reativo para login
+// Computed reativo para verificar se o usuário está logado
 const isLoggedIn = computed(() => authToken.value !== null)
+
+// Computed reativo para verificar se o usuário tem permissão para acessar a página de gráficos
+const userHasPermission = computed(() => {
+  return perfilUsuario.value === 'GESTOR_DE_SEGURANCA_PUBLICA' // Substitua com o perfil adequado
+})
 
 // Sempre que o token mudar, salvar no localStorage
 watchEffect(() => {
@@ -61,14 +70,14 @@ watchEffect(() => {
 const handleLogout = () => {
   authToken.value = null
   userName.value = 'Usuário'
+  perfilUsuario.value = 'PUBLICO' // Reseta o perfil ao fazer logout
+  localStorage.removeItem('authToken')
+  localStorage.removeItem('userName')
+  localStorage.removeItem('userPerfil')
   router.push({ name: 'login' })
 }
 
-window.addEventListener('storage', () => {
-  authToken.value = localStorage.getItem('authToken')
-  userName.value = localStorage.getItem('userName') || 'Usuário'
-})
-
+// Funções para o controle do menu
 const menuAberto = ref(false)
 
 const toggleMenu = () => {
@@ -103,6 +112,7 @@ div.layout
           RouterLink.nav-link(to="/sobre" @click="fecharMenu") Sobre
           RouterLink.nav-link(to="/ocorrencias" @click="fecharMenu") Ocorrências
           RouterLink.nav-link(to="/denuncia" @click="fecharMenu") Denúncia
+          RouterLink.nav-link(v-if="userHasPermission" to="/grafico" @click="fecharMenu") Estatísticas
 
         nav.nav-buttons
           div(v-if="!isLoggedIn")
