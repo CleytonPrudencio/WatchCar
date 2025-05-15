@@ -1,8 +1,13 @@
 package com.system.watchCar.dto;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.br.CPF;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 
 @Data
 public class RegisterRequest {
@@ -17,7 +22,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "CPF is required")
-    @Pattern(regexp = "^[0-9]{11}$", message = "CPF must contain only 11 digits")
+    @CPF(message = "CPF must contain only 11 digits")
     private String cpf;
 
     @NotNull(message = "Tipo is required")

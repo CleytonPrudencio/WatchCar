@@ -11,11 +11,13 @@ import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.TokenRepository;
 import com.system.watchCar.repository.UserRepository;
 import com.system.watchCar.security.JwtTokenUtil;
+import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,14 +38,17 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
 
+    private final RoleService roleService;
+
     @Autowired
-    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService, TokenRepository tokenRepository) {
+    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService, TokenRepository tokenRepository, RoleService roleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenUtil = jwtTokenUtil;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.tokenRepository = tokenRepository;
+        this.roleService = roleService;
     }
 
     public String authenticate(String username, String password) {
@@ -68,7 +73,8 @@ public class AuthenticationService {
         throw new RuntimeException("Invalid username or password");
     }
 
-    public void register(RegisterRequest registerRequest) {
+    @Transactional
+    public User register(RegisterRequest registerRequest) {
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
         Optional<User> existingUserOpt = userRepository.findByCpf(registerRequest.getCpf());
 
@@ -78,7 +84,7 @@ public class AuthenticationService {
             user = existingUserOpt.get();
 
             if (Boolean.TRUE.equals(user.getAtivo())) {
-                throw new RuntimeException("Usuário já registrado e ativo.");
+                throw new UserExecption("Usuário já registrado e ativo.");
             }
 
             // Reativar usuário
@@ -94,24 +100,14 @@ public class AuthenticationService {
         user.setPassword(encodedPassword);
         user.setEmail(registerRequest.getEmail());
 
-        // Papel (role) do usuário
-        RoleType roleType = switch (registerRequest.getTipo()) {
-            case 1 -> RoleType.PUBLICO;
-            case 2 -> RoleType.POLICIAL;
-            case 3 -> RoleType.AGENTE_DE_SEGURANCA;
-            case 4 -> RoleType.INVESTIGADOR;
-            case 5 -> RoleType.GESTOR_DE_SEGURANCA_PUBLICA;
-            default -> throw new IllegalArgumentException("Tipo de usuário inválido.");
-        };
-
-        Role role = roleRepository.findByName(roleType)
-                .orElseThrow(() -> new RuntimeException("Papel não encontrado: " + roleType));
+        // Verifica se o Role já existe
+        Role role = roleService.findById(registerRequest.getTipo());
         user.setRole(role);
 
         // Campos adicionais obrigatórios
         if (List.of(2, 3, 4).contains(registerRequest.getTipo())) {
             if (registerRequest.getDelegacia() == null || registerRequest.getDistintivo() == null || registerRequest.getRa() == null) {
-                throw new IllegalArgumentException("Delegacia, distintivo e RA são obrigatórios para este tipo de usuário.");
+                throw new UserExecption("Delegacia, distintivo e RA são obrigatórios para este tipo de usuário.");
             }
             user.setDelegate(registerRequest.getDelegacia());
             user.setBadge(registerRequest.getDistintivo());
@@ -126,8 +122,9 @@ public class AuthenticationService {
             user.setCargo(registerRequest.getCargo());
         }
 
+
         // Salva novo ou atualizado
-        userRepository.save(user);
+        User newUser = userRepository.save(user);
 
         // Dados do e-mail
         Map<String, Object> dados = new HashMap<>();
@@ -155,6 +152,7 @@ public class AuthenticationService {
                 TipoTemplateEmail.CONTA_CRIADA,
                 dados
         );
+        return newUser;
     }
 
     public User getUserDetails(String username) {
