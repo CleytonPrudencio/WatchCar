@@ -100,7 +100,7 @@ public class AuthenticationService {
         user.setEmail(registerRequest.getEmail());
 
         // Verifica se o Role já existe
-        Role role = roleService.findByIdReturnRole(registerRequest.getTipo());
+        Role role = roleService.findById(registerRequest.getTipo());
         user.setRole(role);
 
         // Campos adicionais obrigatórios
