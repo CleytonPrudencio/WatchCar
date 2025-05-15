@@ -1,65 +1,32 @@
 package com.system.watchCar.dto.exceptions;
 
-import com.system.watchCar.service.exceptions.UserExecption;
+import com.system.watchCar.interfaces.IFieldNameError;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class ErrorDTO {
-    private final Instant timestamp = Instant.now();
-    private int status;
-    private String messege;
-    private String path;
-    private String method;
-    private List<FieldDTO> errors;
+public class ErrorsDTO extends ErrorDTO {
 
-    public ErrorDTO(HttpStatus status, Exception exception, HttpServletRequest request) {
-        this.status = status.value();
-        this.path = request.getRequestURI();
-        this.method = request.getMethod();
-        this.messege = exception.getMessage();
-        errors = new ArrayList<>();
-        if(exception instanceof UserExecption userExecption) {
-            errors.add(userExecption.getField());
-        }else {
-            errors.add(new FieldDTO(status.name(), exception.getMessage()));
+    private List<FieldDTO> errors = new ArrayList<>();
+
+    public ErrorsDTO(HttpStatus status, Exception exception, HttpServletRequest request) {
+        super(status, exception, request);
+        if(exception instanceof IFieldNameError error){
+            if (Objects.nonNull(error.getField())) {
+                errors.add(error.getField());
+            }
         }
     }
 
-    public ErrorDTO(HttpStatus status, MethodArgumentNotValidException validation, HttpServletRequest request) {
-        this.status = status.value();
-        this.path = request.getRequestURI();
-        this.method = request.getMethod();
-        this.messege = validation.getMessage();
-        errors = new ArrayList<>();
-        for (FieldError fields : validation.getBindingResult().getFieldErrors()) {
-            errors.add(new FieldDTO(fields.getField(), fields.getDefaultMessage()));
+    public ErrorsDTO(HttpStatus status, MethodArgumentNotValidException validation, HttpServletRequest request) {
+        super(status, validation, request);
+        for (var error : validation.getFieldErrors()) {
+            errors.add(new FieldDTO(error.getField(), error.getDefaultMessage()));
         }
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessege() {
-        return messege;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getMethod() {
-        return method;
     }
 
     public List<FieldDTO> getErrors() {

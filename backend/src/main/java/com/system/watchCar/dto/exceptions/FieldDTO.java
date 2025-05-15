@@ -1,8 +1,16 @@
 package com.system.watchCar.dto.exceptions;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public class ResultException {
+@Data
+@AllArgsConstructor
+public class FieldDTO {
+    private Object fieldName;
     private String message;
-    private List<String> erros;
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s", fieldName, message);
+    }
 }

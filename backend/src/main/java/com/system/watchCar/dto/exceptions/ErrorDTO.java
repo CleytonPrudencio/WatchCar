@@ -5,14 +5,14 @@ import org.springframework.http.HttpStatus;
 import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
-public class NameErrorDTO {
+public class ErrorDTO {
     private final Instant timestamp = Instant.now();
     protected int status;
     protected String messege;
     protected String path;
     protected String method;
 
-    public NameErrorDTO(HttpStatus status, Exception exception, HttpServletRequest request) {
+    public ErrorDTO(HttpStatus status, Exception exception, HttpServletRequest request) {
         this.status = status.value();
         this.path = request.getRequestURI();
         this.method = request.getMethod();
