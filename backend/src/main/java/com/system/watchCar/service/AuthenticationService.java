@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -68,6 +69,7 @@ public class AuthenticationService {
         throw new RuntimeException("Invalid username or password");
     }
 
+    @Transactional
     public void register(RegisterRequest registerRequest) {
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
         Optional<User> existingUserOpt = userRepository.findByCpf(registerRequest.getCpf());
