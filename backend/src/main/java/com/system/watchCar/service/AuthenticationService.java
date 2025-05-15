@@ -11,6 +11,7 @@ import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.TokenRepository;
 import com.system.watchCar.repository.UserRepository;
 import com.system.watchCar.security.JwtTokenUtil;
+import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -73,7 +74,7 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void register(RegisterRequest registerRequest) {
+    public User register(RegisterRequest registerRequest) {
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
         Optional<User> existingUserOpt = userRepository.findByCpf(registerRequest.getCpf());
 
@@ -83,7 +84,7 @@ public class AuthenticationService {
             user = existingUserOpt.get();
 
             if (Boolean.TRUE.equals(user.getAtivo())) {
-                throw new RuntimeException("Usuário já registrado e ativo.");
+                throw new UserExecption("Usuário já registrado e ativo.");
             }
 
             // Reativar usuário
@@ -106,7 +107,7 @@ public class AuthenticationService {
         // Campos adicionais obrigatórios
         if (List.of(2, 3, 4).contains(registerRequest.getTipo())) {
             if (registerRequest.getDelegacia() == null || registerRequest.getDistintivo() == null || registerRequest.getRa() == null) {
-                throw new IllegalArgumentException("Delegacia, distintivo e RA são obrigatórios para este tipo de usuário.");
+                throw new UserExecption("Delegacia, distintivo e RA são obrigatórios para este tipo de usuário.");
             }
             user.setDelegate(registerRequest.getDelegacia());
             user.setBadge(registerRequest.getDistintivo());
@@ -123,7 +124,7 @@ public class AuthenticationService {
 
 
         // Salva novo ou atualizado
-        userRepository.save(user);
+        User newUser = userRepository.save(user);
 
         // Dados do e-mail
         Map<String, Object> dados = new HashMap<>();
@@ -151,6 +152,7 @@ public class AuthenticationService {
                 TipoTemplateEmail.CONTA_CRIADA,
                 dados
         );
+        return newUser;
     }
 
     public User getUserDetails(String username) {
