@@ -3,11 +3,13 @@ package com.system.watchCar.controller;
 import com.system.watchCar.dto.*;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.response.AuthResponse;
+import com.system.watchCar.response.UserResponse;
 import com.system.watchCar.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,8 +19,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -53,11 +57,13 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "409", description = "Username already exists")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        authenticationService.register(registerRequest);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(Map.of("success", true, "message", "Usuário criado com sucesso"));    }
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        User user = authenticationService.register(registerRequest);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(user.getId()).toUri();
+        return ResponseEntity.created(uri).body(new UserResponse().toUser(user));
+    }
+
 
     @Operation(summary = "Register a new user", description = "Create a new user and save it to the database")
     @ApiResponses(value = {
