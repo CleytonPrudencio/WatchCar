@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "409", description = "Username already exists")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         authenticationService.register(registerRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
