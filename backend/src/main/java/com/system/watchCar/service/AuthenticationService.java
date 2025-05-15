@@ -37,14 +37,17 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
 
+    private final RoleService roleService;
+
     @Autowired
-    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService, TokenRepository tokenRepository) {
+    public AuthenticationService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil, RoleRepository roleRepository, EmailService emailService, TokenRepository tokenRepository, RoleService roleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenUtil = jwtTokenUtil;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.tokenRepository = tokenRepository;
+        this.roleService = roleService;
     }
 
     public String authenticate(String username, String password) {
@@ -96,18 +99,8 @@ public class AuthenticationService {
         user.setPassword(encodedPassword);
         user.setEmail(registerRequest.getEmail());
 
-        // Papel (role) do usuário
-        RoleType roleType = switch (registerRequest.getTipo()) {
-            case 1 -> RoleType.PUBLICO;
-            case 2 -> RoleType.POLICIAL;
-            case 3 -> RoleType.AGENTE_DE_SEGURANCA;
-            case 4 -> RoleType.INVESTIGADOR;
-            case 5 -> RoleType.GESTOR_DE_SEGURANCA_PUBLICA;
-            default -> throw new IllegalArgumentException("Tipo de usuário inválido.");
-        };
-
-        Role role = roleRepository.findByName(roleType)
-                .orElseThrow(() -> new RuntimeException("Papel não encontrado: " + roleType));
+        // Verifica se o Role já existe
+        Role role = roleService.findByIdReturnRole(registerRequest.getTipo());
         user.setRole(role);
 
         // Campos adicionais obrigatórios
@@ -127,6 +120,7 @@ public class AuthenticationService {
             user.setDepartamento(registerRequest.getDepartamento());
             user.setCargo(registerRequest.getCargo());
         }
+
 
         // Salva novo ou atualizado
         userRepository.save(user);
