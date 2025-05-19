@@ -1,5 +1,5 @@
 package com.system.watchCar.interfaces;
 
-public interface IResponse {
-    
+public interface IResponseOK {
+    boolean getSuccess();
 }

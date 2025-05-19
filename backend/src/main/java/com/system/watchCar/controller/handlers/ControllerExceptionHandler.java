@@ -3,6 +3,8 @@ package com.system.watchCar.controller.handlers;
 import com.system.watchCar.dto.exceptions.ErrorDTO;
 import com.system.watchCar.dto.exceptions.ErrorResponseDTO;
 import com.system.watchCar.dto.exceptions.ErrorsDTO;
+import com.system.watchCar.response.LocalResponse;
+import com.system.watchCar.service.exceptions.LocalException;
 import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,4 +33,11 @@ public class ControllerExceptionHandler {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(new ErrorDTO(status, error, request));
     }
+
+    @ExceptionHandler(LocalException.class)
+    public ResponseEntity<ErrorDTO> localException(LocalException error, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(new ErrorDTO(status, error, request));
+    }
+
 }

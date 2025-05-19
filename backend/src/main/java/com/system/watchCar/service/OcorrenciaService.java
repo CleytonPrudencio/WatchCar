@@ -70,7 +70,7 @@ public class OcorrenciaService {
                     User usuario = userRepository.findById(ocorrencia.getIdUsuario()).orElse(null);
                     Veiculo veiculo = veiculoRepository.findById(ocorrencia.getIdVeiculo()).orElse(null);
                     Artigo artigoCriminal = artigoRepository.findById(Long.valueOf(ocorrencia.getCodArtigo())).orElse(null);
-                    Local local = localRepository.findById(ocorrencia.getIdLocal().getId()).orElse(null);
+                    Local local = localRepository.findById(ocorrencia.getIdLocal().getIdLocal()).orElse(null);
 
                     OcorrenciaDTO dto = new OcorrenciaDTO();
                     dto.setId(ocorrencia.getId());
