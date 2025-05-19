@@ -1,38 +1,21 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.dto;
 
 import com.system.watchCar.interfaces.ILocal;
 
-import javax.persistence.*;
+public class LocalDTO implements ILocal {
 
-@Entity
-@Table(name = "TB_LOCAL")
-public class Local implements ILocal {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "localizacao_seq")
-    @javax.persistence.SequenceGenerator(name = "localizacao_seq", sequenceName = "ISEQ$$_76242", allocationSize = 1)
     private Long idLocal;
-
-    @Column(length = 255)
     private String logradouro;
-
-    @Column(length = 255)
     private String bairro;
-
-    @Column(length = 255)
     private String cidade;
-
-    @Column(length = 255)
     private String estado;
-
-    @Column(length = 255)
     private String cep;
 
-    public Local() {
+    public LocalDTO() {
     }
 
     @Override
-    public Local setIdLocal(Long id) {
+    public LocalDTO setIdLocal(Long id) {
         this.idLocal = id;
         return this;
     }
@@ -43,7 +26,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setLogradouro(String logradouro) {
+    public LocalDTO setLogradouro(String logradouro) {
         this.logradouro = logradouro;
         return this;
     }
@@ -54,7 +37,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setBairro(String bairro) {
+    public LocalDTO setBairro(String bairro) {
         this.bairro = bairro;
         return this;
     }
@@ -65,7 +48,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setCidade(String cidade) {
+    public LocalDTO setCidade(String cidade) {
         this.cidade = cidade;
         return this;
     }
@@ -76,7 +59,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setEstado(String estado) {
+    public LocalDTO setEstado(String estado) {
         this.estado = estado;
         return this;
     }
@@ -87,7 +70,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setCep(String cep) {
+    public LocalDTO setCep(String cep) {
         this.cep = cep;
         return this;
     }
