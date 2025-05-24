@@ -2,6 +2,7 @@ package com.system.watchCar.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -20,4 +21,7 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", nullable = false, unique = true)
     private RoleType name;
+
+    public Role() {
+    }
 }
