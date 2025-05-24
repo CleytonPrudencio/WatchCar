@@ -3,7 +3,6 @@ import Cadastro from '../views/Cadastro.vue'
 import Login from '../views/Login.vue'
 import Inicio from '../views/Inicio.vue'
 import Sobre from '../views/Sobre.vue'
-import Ocorrencias from '../views/Ocorrencias.vue'
 import Denuncia from '../views/Denuncia.vue'
 import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
 import { fetchUserData } from '@/services/authService'
@@ -35,8 +34,8 @@ const router = createRouter({
     },
     {
       path: '/ocorrencias',
-      name: 'ocorrencias',
-      component: Ocorrencias,
+      name: 'CadastroEndereco',
+      component: Cadastro,
     },
     {
       path: '/denuncia',
