@@ -1,5 +1,7 @@
 package com.system.watchCar.interfaces;
 
+import com.system.watchCar.service.exceptions.TipoOcorrenciaException;
+
 public interface ITipoOcorrencia {
 
     ITipoOcorrencia setIdTipoOcorrencia(Long id);
@@ -19,7 +21,7 @@ public interface ITipoOcorrencia {
             instance.setDescricaoTipoOcorrencia(getDescricaoTipoOcorrencia());
             return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Error casting to TipoOcorrencia", e);
+            throw new TipoOcorrenciaException("Erro ao converter o tipo de ocorrência para classe "+ clazz.getSimpleName(), e);
         }
     }
 }
