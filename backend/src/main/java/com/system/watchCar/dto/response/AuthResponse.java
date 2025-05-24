@@ -1,4 +1,4 @@
-package com.system.watchCar.response;
+package com.system.watchCar.dto.response;
 
 
 public class AuthResponse {

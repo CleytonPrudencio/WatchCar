@@ -1,4 +1,4 @@
-package com.system.watchCar.response;
+package com.system.watchCar.dto.response;
 
 import com.system.watchCar.entity.User;
 import com.system.watchCar.interfaces.IResponseOK;

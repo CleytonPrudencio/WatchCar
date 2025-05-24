@@ -1,4 +1,4 @@
-package com.system.watchCar.response;
+package com.system.watchCar.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.system.watchCar.interfaces.ILocal;
