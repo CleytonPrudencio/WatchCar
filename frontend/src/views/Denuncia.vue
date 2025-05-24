@@ -187,7 +187,7 @@ const horaOcorrencia = ref('')
 const dataOcorrencia = ref('')
 const descricao = ref('')
 const anonimo = ref(false)
-const tipoOcorrenciaList = ref<TipoOcorrenciaType[]>([])
+const tipoOcorrenciaList = ref<TipoOcorrenciaType[]>([]);
 const artigos = ref([])
 const artigoSelecionadoId = ref(null)
 const receberAlertas = ref(true) // valor padrão: sim
@@ -269,9 +269,9 @@ const carregarArtigos = async () => {
 
 const carregarTiposOcorrencia = async () => {
   try {
-    tipoOcorrenciaList.value = await tipoOcorService.findAll()
+    tipoOcorrenciaList.value = await tipoOcorService.findAll();
   } catch (error) {
-    toast.error('Erro ao carregar os tipos de ocorrência.')
+    toast.error('2 - Erro ao carregar os tipos de ocorrência.\n'+ error)
   }
 }
 
