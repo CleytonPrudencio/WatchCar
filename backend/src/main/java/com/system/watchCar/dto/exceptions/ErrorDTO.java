@@ -1,16 +1,18 @@
 package com.system.watchCar.dto.exceptions;
 
+import com.system.watchCar.interfaces.IResponseOK;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
-public class ErrorDTO {
+public class ErrorDTO implements IResponseOK {
     private final Instant timestamp = Instant.now();
     protected int status;
     protected String messege;
     protected String path;
     protected String method;
+    protected boolean success = false;
 
     public ErrorDTO(HttpStatus status, Exception exception, HttpServletRequest request) {
         this.status = status.value();
@@ -37,5 +39,10 @@ public class ErrorDTO {
 
     public String getMethod() {
         return method;
+    }
+
+    @Override
+    public boolean getSuccess() {
+        return success;
     }
 }

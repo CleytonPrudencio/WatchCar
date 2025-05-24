@@ -1,12 +1,15 @@
 package com.system.watchCar.response;
 
 import com.system.watchCar.entity.User;
+import com.system.watchCar.interfaces.IResponseOK;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Objects;
+
 @Getter
 @Setter
-public class UserResponse {
+public class UserResponse implements IResponseOK {
 
     private Long id;
     private String name;
@@ -20,6 +23,16 @@ public class UserResponse {
     private String cargo;
     private String ra;
     private boolean ativo;
+    private boolean success = false;
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    @Override
+    public boolean getSuccess() {
+        return success;
+    }
 
     public UserResponse toUser(User user){
         this.id = user.getId();
@@ -34,6 +47,7 @@ public class UserResponse {
         this.cargo = user.getCargo();
         this.ra = user.getRa();
         this.ativo = user.getAtivo();
+        success = Objects.nonNull(user.getCpf());
         return this;
     }
 }
