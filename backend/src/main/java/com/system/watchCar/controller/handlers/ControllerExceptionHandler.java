@@ -3,7 +3,6 @@ package com.system.watchCar.controller.handlers;
 import com.system.watchCar.dto.exceptions.ErrorDTO;
 import com.system.watchCar.dto.exceptions.ErrorResponseDTO;
 import com.system.watchCar.dto.exceptions.ErrorsDTO;
-import com.system.watchCar.response.LocalResponse;
 import com.system.watchCar.service.exceptions.LocalException;
 import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.http.HttpStatus;

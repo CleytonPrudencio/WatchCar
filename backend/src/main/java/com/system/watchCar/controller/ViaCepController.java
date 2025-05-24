@@ -1,6 +1,6 @@
 package com.system.watchCar.controller;
 
-import com.system.watchCar.response.LocalResponse;
+import com.system.watchCar.dto.response.LocalResponse;
 import com.system.watchCar.service.ViaCepService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

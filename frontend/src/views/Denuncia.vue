@@ -86,13 +86,16 @@
 
       template(v-if="etapa === 3")
         .step-content(:class="{'active-step': etapa === 3}")
+          
           .input-group
-            label(for="artigoId") 
+            label(for="tipoOcorrenciaId") 
             | Tipo de Ocorrência
             span.text-danger() *
-            select(id="artigoId" v-model="artigoSelecionadoId" required)
+            select(id="tipoOcorrenciaId" v-model="tipoOcorrencia" required)
               option(value="" disabled selected) Selecione o Tipo de Ocorrência
-              option(v-for="artigo in artigos" :key="artigo.id" :value="artigo.id") {{ artigo.descricao }}
+              option(v-for="tipo in tipoOcorrenciaList" :key="tipo.id" :value="tipo.id") {{ tipo.name }}
+          
+          
           .input-group
             label(for="placa") 
             | Placa do Veículo
@@ -169,6 +172,8 @@ import { toast } from 'vue3-toastify'
 import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
 import { buscarArtigos } from '@/services/artigoService'
 import { useLoadingStore } from '@/stores/loadingStore'
+import * as tipoOcorService from '@/services/tipoOcorrenciaService'
+import type { TipoOcorrenciaType } from '@/types/tipoOcorrencia'
 const store = useLoadingStore()
 const router = useRouter()
 
@@ -182,7 +187,7 @@ const horaOcorrencia = ref('')
 const dataOcorrencia = ref('')
 const descricao = ref('')
 const anonimo = ref(false)
-const tipoOcorrencia = ref('')
+const tipoOcorrenciaList = ref<TipoOcorrenciaType[]>([])
 const artigos = ref([])
 const artigoSelecionadoId = ref(null)
 const receberAlertas = ref(true) // valor padrão: sim
@@ -255,11 +260,21 @@ const etapa2Valida = computed(() => {
 const usuarioLogado = ref(false) // Controla se o usuário está logado
 const carregarArtigos = async () => {
   try {
-    artigos.value = await buscarArtigos()
+    const data = await buscarArtigos()
+    artigos.value = data
   } catch (error) {
     toast.error('Erro ao carregar os artigos do Código Penal.')
   }
 }
+
+const carregarTiposOcorrencia = async () => {
+  try {
+    tipoOcorrenciaList.value = await tipoOcorService.findAll()
+  } catch (error) {
+    toast.error('Erro ao carregar os tipos de ocorrência.')
+  }
+}
+
 const buscarUsuario = async () => {
   const token = localStorage.getItem('authToken')
 
@@ -396,6 +411,7 @@ const toggleAnonimo = () => {
 onMounted(() => {
   buscarUsuario()
   carregarArtigos()
+  carregarTiposOcorrencia()
   for (let ano = anoAtual; ano >= anoAtual - 10; ano--) {
     anosDisponiveis.value.push(ano)
   }

@@ -1,8 +1,11 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.TipoOcorrenciaDTO;
+import com.system.watchCar.dto.response.Response;
 import com.system.watchCar.entity.TipoOcorrencia;
 import com.system.watchCar.repository.TipoOcorrenciaRepository;
+import com.system.watchCar.dto.response.TipoOcorrenciaResponse;
+import com.system.watchCar.service.exceptions.TipoOcorrenciaException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +25,14 @@ public class TipoOcorrenciaService {
     }
 
     @Transactional(readOnly = true)
-    public List<TipoOcorrenciaDTO> findAll(){
+    public Response findAll(){
         List<TipoOcorrencia> tipos = tipoOcorrenciaRepository.findAll();
         if(tipos.isEmpty()){
-            throw new RuntimeException("Nenhum tipo de ocorrência encontrado");
+            throw new TipoOcorrenciaException("Nenhum tipo de ocorrência encontrado");
         }
-        return tipos.stream()
-                .map(tipo -> tipo.toTipoOcorrencia(TipoOcorrenciaDTO.class))
-                .toList();
+        Response<List<TipoOcorrenciaResponse>> response = Response.success(tipos.stream()
+                .map(tipo -> tipo.toTipoOcorrencia(TipoOcorrenciaResponse.class))
+                .toList());
+        return response;
     }
 }

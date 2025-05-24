@@ -1,6 +1,6 @@
 package com.system.watchCar.service;
 
-import com.system.watchCar.response.LocalResponse;
+import com.system.watchCar.dto.response.LocalResponse;
 import com.system.watchCar.service.exceptions.LocalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
