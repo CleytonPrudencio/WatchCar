@@ -271,7 +271,7 @@ const carregarTiposOcorrencia = async () => {
   try {
     tipoOcorrenciaList.value = await tipoOcorService.findAll();
   } catch (error) {
-    toast.error('2 - Erro ao carregar os tipos de ocorrência.\n'+ error)
+    toast.error('Erro ao carregar os tipos de ocorrência.\n'+ error)
   }
 }
 
