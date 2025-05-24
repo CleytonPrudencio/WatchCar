@@ -1,24 +1,18 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.dto;
 
 import com.system.watchCar.interfaces.ITipoOcorrencia;
 
-import javax.persistence.*;
+public class TipoOcorrenciaDTO implements ITipoOcorrencia {
 
-@Entity
-@Table(name = "TB_TIPO_OCORRENCIA")
-public class TipoOcorrencia implements ITipoOcorrencia {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idTipoOcorrencia;
     private String nameTipoOcorrencia;
     private String descricaoTipoOcorrencia;
 
-    public TipoOcorrencia() {
+    public TipoOcorrenciaDTO() {
     }
 
     @Override
-    public TipoOcorrencia setIdTipoOcorrencia(Long id) {
+    public TipoOcorrenciaDTO setIdTipoOcorrencia(Long id) {
         this.idTipoOcorrencia = id;
         return this;
     }
@@ -29,7 +23,7 @@ public class TipoOcorrencia implements ITipoOcorrencia {
     }
 
     @Override
-    public TipoOcorrencia setNameTipoOcorrencia(String name) {
+    public TipoOcorrenciaDTO setNameTipoOcorrencia(String name) {
         this.nameTipoOcorrencia = name;
         return this;
     }
@@ -40,7 +34,7 @@ public class TipoOcorrencia implements ITipoOcorrencia {
     }
 
     @Override
-    public TipoOcorrencia setDescricaoTipoOcorrencia(String descricao) {
+    public TipoOcorrenciaDTO setDescricaoTipoOcorrencia(String descricao) {
         this.descricaoTipoOcorrencia = descricao;
         return this;
     }

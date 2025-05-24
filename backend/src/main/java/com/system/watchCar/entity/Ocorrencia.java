@@ -16,8 +16,6 @@ public class Ocorrencia {
     @Column(name = "ID")
     private Long id;
 
-
-
     @Column(name = "ID_USUARIO")
     private Long idUsuario;
 
@@ -49,4 +47,8 @@ public class Ocorrencia {
     @ManyToOne
     @JoinColumn(name = "ID_LOCAL")
     private Local idLocal;
+
+    @ManyToOne
+    @JoinColumn(name = "ID_TIPO_OCORRENCIA")
+    private TipoOcorrencia tipoOcorrencia;
 }
