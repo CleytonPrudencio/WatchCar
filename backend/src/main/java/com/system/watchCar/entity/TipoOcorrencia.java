@@ -1,8 +1,7 @@
 package com.system.watchCar.entity;
 
 import com.system.watchCar.interfaces.ITipoOcorrencia;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "TB_TIPO_OCORRENCIA")

@@ -1,10 +1,8 @@
 package com.system.watchCar.service;
 
-import com.monitorjbl.xlsx.StreamingReader;
 import com.system.watchCar.dto.ArquivoDTO;
 import com.system.watchCar.dto.DenunciaRequest;
 import com.system.watchCar.entity.Artigo;
-import com.system.watchCar.entity.Ocorrencia;
 import com.system.watchCar.repository.ArtigoRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;

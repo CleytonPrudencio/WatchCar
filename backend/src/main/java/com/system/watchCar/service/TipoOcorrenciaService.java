@@ -2,9 +2,9 @@ package com.system.watchCar.service;
 
 import com.system.watchCar.dto.TipoOcorrenciaDTO;
 import com.system.watchCar.dto.response.Response;
+import com.system.watchCar.dto.response.TipoOcorrenciaResponse;
 import com.system.watchCar.entity.TipoOcorrencia;
 import com.system.watchCar.repository.TipoOcorrenciaRepository;
-import com.system.watchCar.dto.response.TipoOcorrenciaResponse;
 import com.system.watchCar.service.exceptions.TipoOcorrenciaException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

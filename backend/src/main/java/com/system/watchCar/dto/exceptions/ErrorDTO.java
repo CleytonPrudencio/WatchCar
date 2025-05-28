@@ -1,9 +1,9 @@
 package com.system.watchCar.dto.exceptions;
 
 import com.system.watchCar.interfaces.IResponseOK;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 
 public class ErrorDTO implements IResponseOK {

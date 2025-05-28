@@ -5,13 +5,12 @@ import com.system.watchCar.dto.exceptions.ErrorResponseDTO;
 import com.system.watchCar.dto.exceptions.ErrorsDTO;
 import com.system.watchCar.service.exceptions.LocalException;
 import com.system.watchCar.service.exceptions.UserExecption;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {

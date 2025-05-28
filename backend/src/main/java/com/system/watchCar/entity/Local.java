@@ -1,8 +1,7 @@
 package com.system.watchCar.entity;
 
 import com.system.watchCar.interfaces.ILocal;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "TB_LOCAL")
@@ -10,7 +9,7 @@ public class Local implements ILocal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "localizacao_seq")
-    @javax.persistence.SequenceGenerator(name = "localizacao_seq", sequenceName = "ISEQ$$_76242", allocationSize = 1)
+    @SequenceGenerator(name = "localizacao_seq", sequenceName = "ISEQ$$_76242", allocationSize = 1)
     private Long idLocal;
 
     @Column(length = 255)

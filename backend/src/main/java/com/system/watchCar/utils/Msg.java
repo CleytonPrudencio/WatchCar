@@ -1,6 +1,7 @@
 package com.system.watchCar.utils;
 
-import com.sun.istack.NotNull;
+
+import jakarta.validation.constraints.NotNull;
 
 public class Msg {
 

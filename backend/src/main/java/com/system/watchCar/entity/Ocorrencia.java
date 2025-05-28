@@ -1,8 +1,8 @@
 package com.system.watchCar.entity;
 
+import jakarta.persistence.*;
 import lombok.Data;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,7 +12,8 @@ public class Ocorrencia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ocorrencia_seq")
-    @SequenceGenerator(name = "ocorrencia_seq", sequenceName = "ISEQ$_76234", allocationSize = 1)  // Ajuste o nome da sequência conforme necessário
+    @SequenceGenerator(name = "ocorrencia_seq", sequenceName = "ISEQ$_76234", allocationSize = 1)
+    // Ajuste o nome da sequência conforme necessário
     @Column(name = "ID")
     private Long id;
 

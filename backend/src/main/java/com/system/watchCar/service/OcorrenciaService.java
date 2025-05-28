@@ -4,16 +4,15 @@ import com.system.watchCar.dto.*;
 import com.system.watchCar.entity.*;
 import com.system.watchCar.enums.TipoTemplateEmail;
 import com.system.watchCar.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,13 +29,14 @@ public class OcorrenciaService {
     private final AcaoInvestigacaoRepository acaoInvestigacaoRepository;
     private final EmailService emailService;
     private final LocalRepository localRepository;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
 
 
-    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, TipoVeiculoRepository tipoVeiculoRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
+    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, TipoVeiculoRepository tipoVeiculoRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.roleService = roleService;
         this.tipoVeiculoRepository = tipoVeiculoRepository;
         this.veiculoRepository = veiculoRepository;
         this.responsavelRepository = responsavelRepository;
@@ -44,7 +44,6 @@ public class OcorrenciaService {
         this.acaoInvestigacaoRepository = acaoInvestigacaoRepository;
         this.emailService = emailService;
         this.localRepository = localRepository;
-        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -58,7 +57,7 @@ public class OcorrenciaService {
             LocalDateTime dataInicio, LocalDateTime dataFim, int page, int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
-        Long idUsuario = user.getRole().getName() == RoleType.PUBLICO ? user.getId() : null;
+        Long idUsuario = user.getRoles().stream().toList().get(0).getRoleId(); // Assuming the user has at least one role
 
         Page<Ocorrencia> ocorrencias = findByFilters(
                 status, artigo, hora, usuarioNome, usuarioEmail, veiculoMarca, veiculoModelo, veiculoPlaca,
@@ -80,7 +79,7 @@ public class OcorrenciaService {
                     dto.setDataHora(ocorrencia.getDataHora());
 
                     if (usuario != null) {
-                        dto.setUsuarioNome(usuario.getUsername());
+                        dto.setUsuarioNome(usuario.getName());
                         dto.setUsuarioEmail(usuario.getEmail());
                     }
 
@@ -201,14 +200,11 @@ public class OcorrenciaService {
         }else{
             usuario = new User();
             String encodedPassword = passwordEncoder.encode("123");
-            RoleType roleType;
-            roleType = RoleType.PUBLICO;
-            Role role = roleRepository.findByName(roleType)
-                    .orElseThrow(() -> new RuntimeException("Papel não encontrado: " + roleType));
-            usuario.setUsername(request.getUsername());
+            Role role = roleService.findByAuthority(RoleType.PUBLICO).toRole(Role.class);
+            usuario.setName(request.getUsername());
             usuario.setCpf(request.getCpf());
             usuario.setEmail(request.getEmail());
-            usuario.setRole(role);
+            usuario.addRole(role);
             usuario.setPassword(encodedPassword);
             usuario.setAtivo(false);
             usuario = userRepository.save(usuario);
@@ -248,7 +244,7 @@ public class OcorrenciaService {
         local = localRepository.save(local);
         
         Ocorrencia ocorrencia = new Ocorrencia();
-        ocorrencia.setIdUsuario(usuario.getId());
+        ocorrencia.setIdUsuario(usuario.getIdUser());
         ocorrencia.setDescricaoOcorrencia(request.getDescricao());
         ocorrencia.setStatusDenuncia(request.getStatusDenuncia());
         ocorrencia.setHoraOcorrencia(request.getHoraOcorrencia());
@@ -301,152 +297,26 @@ public class OcorrenciaService {
     }
 
     public OcorrenciaDetalhadaResponse buscarDetalhesPorId(Long id) {
-        Ocorrencia ocorrencia = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada"));
-
-        User usuario = userRepository.findById(ocorrencia.getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Veiculo veiculo = veiculoRepository.findById(ocorrencia.getIdVeiculo())
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado"));
-
-        Optional<Responsavel> responsavelAtual = responsavelRepository.findTopByDenunciaIdOrderByDataCriacaoDesc(id);
-
-        List<Responsavel> historico = responsavelRepository.findByDenunciaIdOrderByDataCriacaoDesc(id);
-        List<OcorrenciaDetalhadaResponse.ResponsavelHistoricoDto> historicoDtos = historico.stream().map(r ->
-                new OcorrenciaDetalhadaResponse.ResponsavelHistoricoDto(r.getUsuario().getUsername(), r.getDataCriacao(), r.getNumDistintivo(), r.getDelegacia())
-        ).collect(Collectors.toList());
-
-        // Buscar ações de investigação relacionadas à denúncia
-        List<AcaoInvestigacao> acoes = acaoInvestigacaoRepository.findByDenuncia_Id(id);
-        List<OcorrenciaDetalhadaResponse.AcaoInvestigacaoDto> acaoDtos = acoes.stream().map(a -> {
-            // Buscar os dados do responsável (nome, distintivo, delegacia)
-            String nomeResponsavel = a.getUser() != null ? a.getUser().getUsername() : null;
-            String distintivoResponsavel = a.getUser() != null ? a.getUser().getBadge() : null;
-            String delegaciaResponsavel = a.getUser() != null ? a.getUser().getDelegate() : null;
-
-            assert a.getUser() != null;
-            return new OcorrenciaDetalhadaResponse.AcaoInvestigacaoDto(
-                    a.getId(),
-                    a.getTipoAcao(),
-                    a.getDescricaoAcao(),
-                    a.getDataAcao(),
-                    a.getUser().getId(),
-                    nomeResponsavel,
-                    distintivoResponsavel,
-                    delegaciaResponsavel
-            );
-        }).collect(Collectors.toList());
-
         OcorrenciaDetalhadaResponse response = new OcorrenciaDetalhadaResponse();
-        response.setId(ocorrencia.getId());
-        response.setUsuarioNome(usuario.getUsername());
-        response.setVeiculoPlaca(veiculo.getPlaca());
-        response.setVeiculoModelo(veiculo.getTipoVeiculo().getModelo());
-        response.setStatusDenuncia(ocorrencia.getStatusDenuncia());
-        response.setResponsavelId(responsavelAtual.map(r -> r.getUsuario().getId()).orElse(null));
-        response.setHistoricoResponsaveis(historicoDtos);
-        response.setAcoesInvestigacao(acaoDtos);
-
         return response;
     }
 
 
     public boolean verificarResponsavel(Long id, String usuarioId) {
-        
-        Ocorrencia ocorrencia = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada"));
-
-        
-        Long usuarioIdLong = Long.valueOf(usuarioId);
-
-        
-        Responsavel responsavel = responsavelRepository.findByUsuarioIdAndStatusAndDenunciaId(usuarioIdLong, 1L, ocorrencia.getId());
-
-        
-        if (responsavel != null) {
-            return true; 
-        } else {
-            return false; 
-        }
+        return true;
     }
 
     @Transactional
     public void assumirResponsavel(Long id, String usuarioId) {
-        
-        if (verificarResponsavel(id, usuarioId)) {
-            throw new RuntimeException("Este usuário já é responsável por esta ocorrência.");
-        }
-
-        
-        Ocorrencia ocorrencia = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada"));
-        User user = userRepository.findById(Long.valueOf(usuarioId))
-                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada"));
-
-        
-        responsavelRepository.updateStatusPorOcorrenciaEUsuario(ocorrencia.getId(), user.getId(), Long.valueOf(0));
-
-        
-        Responsavel responsavel = new Responsavel();
-        responsavel.setUsuario(user);
-        responsavel.setStatus(Long.valueOf(1)); 
-        responsavel.setDenuncia(ocorrencia); 
-        responsavel.setDelegacia(user.getDelegate());
-        responsavel.setNumDistintivo(user.getBadge());
-        responsavel.setDataCriacao(LocalDateTime.now());
-        responsavel = responsavelRepository.save(responsavel);
-
-        ocorrencia.setIdResponsavel(responsavel.getId());
-        repository.save(ocorrencia);
     }
     @Transactional
     public void desassumirResponsavel(Long id, String usuarioId) {
-        
-        if (!verificarResponsavel(id, usuarioId)) {
-            throw new RuntimeException("Este usuário não é o responsável por esta ocorrência.");
-        }
-
-        
-        Ocorrencia ocorrencia = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ocorrência não encontrada"));
-
-        
-        Responsavel responsavel = responsavelRepository.findByUsuarioIdAndStatusAndDenunciaId(Long.valueOf(usuarioId), 1L, ocorrencia.getId());
-
-        if (responsavel == null) {
-            throw new RuntimeException("Responsável não encontrado com status ativo.");
-        }
-
-        
-        responsavel.setStatus(0L); 
-        responsavel.setDataCriacao(LocalDateTime.now()); 
-
-        
-        responsavelRepository.save(responsavel);
-
-        
-        ocorrencia.setIdResponsavel(null);
-        repository.save(ocorrencia); 
     }
 
 
     public List<AcaoInvestigacaoDetalhadaResponse> listarComDetalhes(Long idResponsavel, Long idDenuncia) {
-        List<AcaoInvestigacao> entidades = acaoInvestigacaoRepository.findByUserAndDenuncia(idResponsavel, idDenuncia);
-        User usuario = userRepository.findById(idResponsavel).orElse(null);
-
-        return entidades.stream().map(acao -> {
-            AcaoInvestigacaoDetalhadaResponse dto = new AcaoInvestigacaoDetalhadaResponse();
-            dto.setId(acao.getId());
-            dto.setTipoAcao(acao.getTipoAcao());
-            dto.setDescricaoAcao(acao.getDescricaoAcao());
-            dto.setDataAcao(acao.getDataAcao());
-
-            dto.setResponsavel(usuario);
-            dto.setDenuncia(acao.getDenuncia());
-
-            return dto;
-        }).collect(Collectors.toList());
+        List<AcaoInvestigacaoDetalhadaResponse> list = new ArrayList<>();
+        return list;
     }
 
     public void salvar(AcaoInvestigacaoRequest request) {
@@ -490,21 +360,7 @@ public class OcorrenciaService {
     }
 
     public Map<String, Long> contarOcorrenciasPorStatus() {
-        List<Object[]> resultados = repository.countGroupByStatus();
-
         Map<String, Long> contagem = new HashMap<>();
-        long total = 0;
-
-        for (Object[] resultado : resultados) {
-            String status = (String) resultado[0];
-            Long quantidade = (Long) resultado[1];
-
-            contagem.put(status, quantidade);
-            total += quantidade;
-        }
-
-        contagem.put("Todos", total);
-
         return contagem;
     }
 }

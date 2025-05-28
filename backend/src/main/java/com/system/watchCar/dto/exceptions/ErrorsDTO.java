@@ -1,10 +1,10 @@
 package com.system.watchCar.dto.exceptions;
 
 import com.system.watchCar.interfaces.IFieldNameError;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

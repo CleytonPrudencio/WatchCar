@@ -3,8 +3,8 @@ package com.system.watchCar.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.system.watchCar.interfaces.ILocal;
 import com.system.watchCar.interfaces.IResponseOK;
+import jakarta.persistence.Column;
 
-import javax.persistence.Column;
 import java.util.Objects;
 
 public class LocalResponse implements ILocal, IResponseOK {

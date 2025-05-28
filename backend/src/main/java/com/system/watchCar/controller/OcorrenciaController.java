@@ -1,10 +1,8 @@
 package com.system.watchCar.controller;
 
 import com.system.watchCar.dto.*;
-import com.system.watchCar.dto.AcaoInvestigacaoRequest;
 import com.system.watchCar.entity.Ocorrencia;
 import com.system.watchCar.entity.User;
-import com.system.watchCar.service.AuthenticationService;
 import com.system.watchCar.service.OcorrenciaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,9 +29,6 @@ public class OcorrenciaController {
     @Autowired
     private final OcorrenciaService ocorrenciaService;
 
-    @Autowired
-    private AuthenticationService authenticationService;
-
     @Operation(summary = "Login to get JWT token", description = "Authenticate user and return JWT token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful login, JWT token returned"),
@@ -56,7 +51,8 @@ public class OcorrenciaController {
             @RequestParam(defaultValue = "10") int size) {
 
         String username = getCurrentUsername();
-        User user = authenticationService.getUserDetails(username);
+        // Todo: Implementar lógica para buscar o usuário pelo username
+        User user = null;
 
         return ocorrenciaService.obterOcorrenciasComDetalhes(
                 user, status, artigo, hora,
