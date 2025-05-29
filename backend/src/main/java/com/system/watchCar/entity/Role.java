@@ -2,8 +2,10 @@ package com.system.watchCar.entity;
 
 import com.system.watchCar.interfaces.IRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
+@AllArgsConstructor
 @Entity
 @Table(name = "TB_ROLE")
 public class Role implements IRole, GrantedAuthority {

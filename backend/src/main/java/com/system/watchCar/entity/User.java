@@ -27,7 +27,7 @@ public class User implements UserDetails {
     private String name;
 
     @NotBlank
-    @Column(nullable = false, length = 6)
+    @Column(nullable = false)
     private String password;
 
     @Email
@@ -54,7 +54,7 @@ public class User implements UserDetails {
     private String cargo; // Para Gestor de Segurança Pública
     private Boolean ativo;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role",
             joinColumns = @JoinColumn(name = "user_userId"),
             inverseJoinColumns = @JoinColumn(name = "role_roleId"))

@@ -4,17 +4,27 @@ import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UserService service;
+
+    @PostMapping(value = "/register")
+    public ResponseEntity<UserDTO> register(@RequestBody UserDTO userDTO) {
+        UserDTO createdUser = service.save(userDTO);
+        return ResponseEntity.ok(createdUser);
+    }
+
+    @PostMapping(value = "/login")
+    public ResponseEntity<UserDTO> login(@RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(service.login(userDTO));
+    }
 
     @GetMapping(value = "/me")
     public ResponseEntity<UserDTO> getMe() {
