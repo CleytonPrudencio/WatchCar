@@ -6,7 +6,6 @@ import com.system.watchCar.entity.User;
 import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +17,9 @@ import java.util.Objects;
 
 @Service
 public class UserService implements UserDetailsService {
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private UserRepository userRepository;
@@ -60,19 +62,9 @@ public class UserService implements UserDetailsService {
         return userEntity;
     }
 
-    protected User authenticated() {
-        try {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            return userRepository.findByCpf(username);
-        }
-        catch (Exception e) {
-            throw new UsernameNotFoundException("Invalid user");
-        }
-    }
-
     @Transactional(readOnly = true)
     public UserDTO getMe() {
-        User entity = authenticated();
+        User entity = authService.authenticated();
         return new UserDTO(entity);
     }
 }
