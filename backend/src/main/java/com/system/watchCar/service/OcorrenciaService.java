@@ -3,18 +3,28 @@ package com.system.watchCar.service;
 import com.system.watchCar.dto.*;
 import com.system.watchCar.entity.*;
 import com.system.watchCar.enums.TipoTemplateEmail;
+import com.system.watchCar.enums.TipoVeiculo;
 import com.system.watchCar.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
-import org.springframework.data.domain.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,7 +32,6 @@ public class OcorrenciaService {
 
     private final OcorrenciaRepository repository;
     private final UserRepository userRepository;
-    private final TipoVeiculoRepository tipoVeiculoRepository;
     private final VeiculoRepository veiculoRepository;
     private final ResponsavelRepository responsavelRepository;
     private final ArtigoRepository artigoRepository;
@@ -33,11 +42,10 @@ public class OcorrenciaService {
     private final PasswordEncoder passwordEncoder;
 
 
-    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, TipoVeiculoRepository tipoVeiculoRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, BCryptPasswordEncoder passwordEncoder) {
+    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.roleService = roleService;
-        this.tipoVeiculoRepository = tipoVeiculoRepository;
         this.veiculoRepository = veiculoRepository;
         this.responsavelRepository = responsavelRepository;
         this.artigoRepository = artigoRepository;
@@ -84,9 +92,9 @@ public class OcorrenciaService {
                     }
 
                     if (veiculo != null) {
-                        dto.setVeiculoPlaca(veiculo.getPlaca());
-                        dto.setVeiculoModelo(veiculo.getTipoVeiculo().getModelo());
-                        dto.setVeiculoMarca(veiculo.getTipoVeiculo().getMarca());
+                        dto.setVeiculoPlaca(veiculo.getPlacaVeiculo());
+                        dto.setVeiculoModelo(veiculo.getModeloVeiculo());
+                        dto.setVeiculoMarca(veiculo.getMarcaVeiculo());
                     }
 
                     if (artigoCriminal != null) {
@@ -153,23 +161,15 @@ public class OcorrenciaService {
             throw new RuntimeException("Status da denúncia inválido");
         }
 
-        
-        TipoVeiculo tipo = tipoVeiculoRepository.findByTipoAndModeloAndMarcaAndCor(
-                request.getTipo(), request.getModelo(), request.getMarca(), request.getCor()
-        ).orElseGet(() -> {
-            TipoVeiculo novoTipo = new TipoVeiculo();
-            novoTipo.setTipo(request.getTipo());
-            novoTipo.setModelo(request.getModelo());
-            novoTipo.setMarca(request.getMarca());
-            novoTipo.setCor(request.getCor());
-            return tipoVeiculoRepository.save(novoTipo);
-        });
+
+        // Todo: Validar se o artigo existe
+        TipoVeiculo tipo = TipoVeiculo.CARRO;
 
         
         Veiculo veiculo = new Veiculo();
         veiculo.setTipoVeiculo(tipo);
-        veiculo.setAno(request.getAno());
-        veiculo.setPlaca(request.getPlaca());
+        veiculo.setAnoVeiculo(request.getAno());
+        veiculo.setPlacaVeiculo(request.getPlaca());
         veiculo = veiculoRepository.save(veiculo);
 
         Local local = new Local();
@@ -186,7 +186,7 @@ public class OcorrenciaService {
         ocorrencia.setStatusDenuncia(request.getStatusDenuncia());
         ocorrencia.setHoraOcorrencia(request.getHoraOcorrencia());
         ocorrencia.setDataHora(request.getDataHora() != null ? request.getDataHora() : LocalDateTime.now()); 
-        ocorrencia.setIdVeiculo(veiculo.getId());
+        ocorrencia.setIdVeiculo(veiculo.getIdVeiculo());
         ocorrencia.setCodArtigo(request.getArtigoLei());
         ocorrencia.setAlerta(Boolean.TRUE.equals(request.getReceberAlertas()) ? 1L : 0L);
         ocorrencia.setIdLocal(local);

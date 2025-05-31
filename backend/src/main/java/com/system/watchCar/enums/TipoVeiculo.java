@@ -1,20 +1,21 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.enums;
 
-import jakarta.persistence.*;
-import lombok.Data;
+public enum TipoVeiculo {
 
-@Data
-@Entity
-@Table(name = "TB_TIPOVEICULO")
-public class TipoVeiculo {
+    CARRO("Carro"),
+    MOTO("Moto"),
+    CAMINHAO("Caminhão"),
+    ONIBUS("Ônibus"),
+    VAN("Van");
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private final String descricao;
 
-    private String tipo;
-    private String modelo;
-    private String marca;
-    private String cor;
+    TipoVeiculo(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
 }
 
