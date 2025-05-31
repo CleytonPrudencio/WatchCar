@@ -20,7 +20,7 @@ public class RoleService {
     @Transactional(readOnly = true)
     public RoleDTO findById(Long id) {
         Role role = repository.findById(id).orElseThrow(()->new RuntimeException("Role not found"));
-        return new RoleDTO(role.getRoleId(), role.getAuthority());
+        return new RoleDTO(role.getIdRole(), role.getAuthority());
     }
 
     // Method to find a role by its authority
@@ -30,7 +30,7 @@ public class RoleService {
         if (Objects.isNull(role)) {
             throw new RuntimeException("Role not found");
         }
-        return new RoleDTO(role.getRoleId(), role.getAuthority());
+        return new RoleDTO(role.getIdRole(), role.getAuthority());
     }
 
     public RoleDTO findByAuthority(RoleType roleType) {
@@ -39,6 +39,6 @@ public class RoleService {
 
     @Transactional(readOnly = true)
     public List<RoleDTO> findAll() {
-        return repository.findAll().stream().map(r-> new RoleDTO(r.getRoleId(), r.getAuthority())).toList();
+        return repository.findAll().stream().map(r-> new RoleDTO(r.getIdRole(), r.getAuthority())).toList();
     }
 }
