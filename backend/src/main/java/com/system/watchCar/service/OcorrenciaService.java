@@ -4,7 +4,7 @@ import com.system.watchCar.dto.*;
 import com.system.watchCar.entity.*;
 import com.system.watchCar.enums.RoleType;
 import com.system.watchCar.enums.TipoTemplateEmail;
-import com.system.watchCar.enums.TipoVeiculo;
+import com.system.watchCar.enums.VeiculoType;
 import com.system.watchCar.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -164,7 +164,7 @@ public class OcorrenciaService {
 
 
         // Todo: Validar se o artigo existe
-        TipoVeiculo tipo = TipoVeiculo.CARRO;
+        VeiculoType tipo = VeiculoType.CARRO;
 
         
         Veiculo veiculo = new Veiculo();

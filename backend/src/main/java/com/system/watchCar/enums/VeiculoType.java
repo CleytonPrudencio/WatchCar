@@ -1,6 +1,6 @@
 package com.system.watchCar.enums;
 
-public enum TipoVeiculo {
+public enum VeiculoType {
 
     CARRO("Carro"),
     MOTO("Moto"),
@@ -10,7 +10,7 @@ public enum TipoVeiculo {
 
     private final String descricao;
 
-    TipoVeiculo(String descricao) {
+    VeiculoType(String descricao) {
         this.descricao = descricao;
     }
 

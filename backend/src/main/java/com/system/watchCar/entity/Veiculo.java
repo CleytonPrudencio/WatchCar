@@ -1,6 +1,6 @@
 package com.system.watchCar.entity;
 
-import com.system.watchCar.enums.TipoVeiculo;
+import com.system.watchCar.enums.VeiculoType;
 import com.system.watchCar.interfaces.IUserSimple;
 import com.system.watchCar.interfaces.IVeiculo;
 import jakarta.persistence.*;
@@ -19,7 +19,7 @@ public class Veiculo implements IVeiculo {
     private String corVeiculo;
 
     @Enumerated(EnumType.STRING)
-    private TipoVeiculo tipoVeiculo;
+    private VeiculoType veiculoType;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -95,14 +95,14 @@ public class Veiculo implements IVeiculo {
     }
 
     @Override
-    public Veiculo setTipoVeiculo(TipoVeiculo tipo) {
-        this.tipoVeiculo = tipo;
+    public Veiculo setTipoVeiculo(VeiculoType tipo) {
+        this.veiculoType = tipo;
         return this;
     }
 
     @Override
-    public TipoVeiculo getTipoVeiculo() {
-        return tipoVeiculo;
+    public VeiculoType getTipoVeiculo() {
+        return veiculoType;
     }
 
     @Override

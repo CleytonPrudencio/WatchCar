@@ -1,6 +1,6 @@
 package com.system.watchCar.interfaces;
 
-import com.system.watchCar.enums.TipoVeiculo;
+import com.system.watchCar.enums.VeiculoType;
 
 public interface IVeiculo {
 
@@ -22,8 +22,8 @@ public interface IVeiculo {
     IVeiculo setCorVeiculo(String cor);
     String getCorVeiculo();
 
-    IVeiculo setTipoVeiculo(TipoVeiculo tipo);
-    TipoVeiculo getTipoVeiculo();
+    IVeiculo setTipoVeiculo(VeiculoType tipo);
+    VeiculoType getTipoVeiculo();
 
     <U extends IUserSimple> IVeiculo setUser(U user);
     IUserSimple getUser();
