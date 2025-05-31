@@ -1,4 +1,4 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.enums;
 
 public enum RoleType {
     PUBLICO,

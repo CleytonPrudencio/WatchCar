@@ -2,7 +2,7 @@ package com.system.watchCar.service;
 
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.entity.Role;
-import com.system.watchCar.entity.RoleType;
+import com.system.watchCar.enums.RoleType;
 import com.system.watchCar.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

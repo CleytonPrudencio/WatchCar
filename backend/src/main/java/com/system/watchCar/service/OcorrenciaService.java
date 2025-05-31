@@ -2,6 +2,7 @@ package com.system.watchCar.service;
 
 import com.system.watchCar.dto.*;
 import com.system.watchCar.entity.*;
+import com.system.watchCar.enums.RoleType;
 import com.system.watchCar.enums.TipoTemplateEmail;
 import com.system.watchCar.enums.TipoVeiculo;
 import com.system.watchCar.repository.*;
