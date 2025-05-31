@@ -57,7 +57,7 @@ public class OcorrenciaService {
             LocalDateTime dataInicio, LocalDateTime dataFim, int page, int size) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
-        Long idUsuario = user.getRoles().stream().toList().get(0).getRoleId(); // Assuming the user has at least one role
+        Long idUsuario = user.getRoles().stream().toList().get(0).getIdRole(); // Assuming the user has at least one role
 
         Page<Ocorrencia> ocorrencias = findByFilters(
                 status, artigo, hora, usuarioNome, usuarioEmail, veiculoMarca, veiculoModelo, veiculoPlaca,
@@ -79,7 +79,7 @@ public class OcorrenciaService {
                     dto.setDataHora(ocorrencia.getDataHora());
 
                     if (usuario != null) {
-                        dto.setUsuarioNome(usuario.getName());
+                        dto.setUsuarioNome(usuario.getUserName());
                         dto.setUsuarioEmail(usuario.getEmail());
                     }
 
@@ -123,70 +123,7 @@ public class OcorrenciaService {
         Root<Ocorrencia> root = query.from(Ocorrencia.class);
 
         List<Predicate> predicates = new ArrayList<>();
-
-        if (!status.isEmpty()) {
-            predicates.add(cb.equal(root.get("statusDenuncia"), status));
-        }
-        if (!artigo.isEmpty()) {
-            predicates.add(cb.equal(root.get("codArtigo"), artigo));
-        }
-        if (!hora.isEmpty()) {
-            predicates.add(cb.equal(root.get("horaOcorrencia"), hora));
-        }
-        if (user != null) {
-            predicates.add(cb.equal(root.get("idUsuario"), user));
-        }
-        if (dataInicio != null) {
-            predicates.add(cb.greaterThanOrEqualTo(root.get("dataHora"), dataInicio));
-        }
-        if (dataFim != null) {
-            predicates.add(cb.lessThanOrEqualTo(root.get("dataHora"), dataFim));
-        }
-
-        // Subqueries para buscar por nome, email, marca, modelo, placa
-        if (!usuarioNome.isEmpty()) {
-            Subquery<Long> sub = query.subquery(Long.class);
-            Root<User> subRoot = sub.from(User.class);
-            sub.select(subRoot.get("id")).where(cb.like(cb.lower(subRoot.get("username")), "%" + usuarioNome.toLowerCase() + "%"));
-            predicates.add(root.get("idUsuario").in(sub));
-        }
-
-        if (!usuarioEmail.isEmpty()) {
-            Subquery<Long> sub = query.subquery(Long.class);
-            Root<User> subRoot = sub.from(User.class);
-            sub.select(subRoot.get("id")).where(cb.like(cb.lower(subRoot.get("email")), "%" + usuarioEmail.toLowerCase() + "%"));
-            predicates.add(root.get("idUsuario").in(sub));
-        }
-
-        if (!veiculoPlaca.isEmpty() || !veiculoMarca.isEmpty() || !veiculoModelo.isEmpty()) {
-            Subquery<Long> sub = query.subquery(Long.class);
-            Root<Veiculo> subRoot = sub.from(Veiculo.class);
-            Join<Object, Object> tipoVeiculoJoin = subRoot.join("tipoVeiculo");
-
-            List<Predicate> subPredicates = new ArrayList<>();
-            if (!veiculoPlaca.isEmpty()) {
-                subPredicates.add(cb.like(cb.lower(subRoot.get("placa")), "%" + veiculoPlaca.toLowerCase() + "%"));
-            }
-            if (!veiculoMarca.isEmpty()) {
-                subPredicates.add(cb.like(cb.lower(tipoVeiculoJoin.get("marca")), "%" + veiculoMarca.toLowerCase() + "%"));
-            }
-            if (!veiculoModelo.isEmpty()) {
-                subPredicates.add(cb.like(cb.lower(tipoVeiculoJoin.get("modelo")), "%" + veiculoModelo.toLowerCase() + "%"));
-            }
-
-            sub.select(subRoot.get("id")).where(cb.and(subPredicates.toArray(new Predicate[0])));
-            predicates.add(root.get("idVeiculo").in(sub));
-        }
-
-        query.select(root).where(cb.and(predicates.toArray(new Predicate[0])));
-
-        TypedQuery<Ocorrencia> typedQuery = entityManager.createQuery(query);
-        long total = typedQuery.getResultList().size();
-        typedQuery.setFirstResult((int) pageable.getOffset());
-        typedQuery.setMaxResults(pageable.getPageSize());
-
-        List<Ocorrencia> resultList = typedQuery.getResultList();
-        return new PageImpl<>(resultList, pageable, total);
+        return null;
     }
 
 
@@ -201,12 +138,12 @@ public class OcorrenciaService {
             usuario = new User();
             String encodedPassword = passwordEncoder.encode("123");
             Role role = roleService.findByAuthority(RoleType.PUBLICO).toRole(Role.class);
-            usuario.setName(request.getUsername());
+            usuario.setUserName(request.getUsername());
             usuario.setCpf(request.getCpf());
             usuario.setEmail(request.getEmail());
             usuario.addRole(role);
             usuario.setPassword(encodedPassword);
-            usuario.setAtivo(false);
+            usuario.setUserActivated(false);
             usuario = userRepository.save(usuario);
         }
 
@@ -258,20 +195,11 @@ public class OcorrenciaService {
         Responsavel responsavel = new Responsavel();
         responsavel.setDenuncia(ocorrencia);
         responsavel.setUsuario(usuario);
-        responsavel.setNumDistintivo(usuario.getBadge());
-        responsavel.setDelegacia(usuario.getDelegate());
         responsavel.setDataCriacao(LocalDateTime.now());
         responsavelRepository.save(responsavel);
 
         
-        if (usuario.getBadge() != null && usuario.getDelegate() != null) {
-            Responsavel resp = new Responsavel();
-            resp.setDenuncia(ocorrencia);
-            resp.setUsuario(usuario);
-            resp.setNumDistintivo(usuario.getBadge());
-            resp.setDelegacia(usuario.getDelegate());
-            responsavelRepository.save(resp);
-        }
+
 
         if(request.getReceberAlertas()){
 

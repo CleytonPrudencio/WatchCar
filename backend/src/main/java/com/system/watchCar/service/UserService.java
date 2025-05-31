@@ -5,7 +5,6 @@ import com.system.watchCar.entity.Role;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.UserRepository;
-import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,12 +31,12 @@ public class UserService implements UserDetailsService {
     @Transactional
     public UserDTO save(UserDTO userDTO) {
         User entity = new User();
-        entity.setName(userDTO.getName());
+        entity.setUserName(userDTO.getName());
         entity.setEmail(userDTO.getEmail());
         entity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         entity.setCpf(userDTO.getCpf());
 
-        Role role = roleRepository.findById(userDTO.getRoles().get(0).getRoleId())
+        Role role = roleRepository.findById(userDTO.getRoles().get(0).getIdRole())
                 .orElseThrow(() -> new IllegalArgumentException("Role not found"));
         entity.addRole(role);
         entity = userRepository.save(entity);

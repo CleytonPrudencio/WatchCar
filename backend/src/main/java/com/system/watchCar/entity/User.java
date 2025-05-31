@@ -1,106 +1,42 @@
 package com.system.watchCar.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.AllArgsConstructor;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
-@NoArgsConstructor
+
 @AllArgsConstructor
 @Entity
-@Table(name = "TB_USUARIO")
-public class User implements UserDetails {
+@Table(name = "TB_USER")
+public class User extends UserSimple {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idUser;
+    @OneToMany(mappedBy = "user")
+    private List<Veiculo> carros = new ArrayList<>();
 
-    @NotBlank
-    @Column(nullable = false)
-    private String name;
+    @OneToOne
+    private Local local;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String password;
+    public User() {}
 
-    @Email
-    @Column(unique = true)
-    private String email;
-
-    // Adicionando os campos CPF e ALERTA
-    @Column(unique = true, length = 11)
-    private String cpf;
-
-    private Boolean alerta; // ALERTA pode ser true ou false
-
-    // Campos adicionais para perfis específicos
-    @Column(name = "DELEGACIA")
-    private String delegate; // Para Policial, Agente de Segurança, Investigador
-
-    @Column(name = "DISTINTIVO")
-    private String badge; // Para Policial, Agente de Segurança, Investigador
-
-    @Column(name = "RA")
-    private String ra; // Para Policial, Agente de Segurança, Investigador
-
-    private String departamento; // Para Gestor de Segurança Pública
-    private String cargo; // Para Gestor de Segurança Pública
-    private Boolean ativo;
-
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "tb_user_role",
-            joinColumns = @JoinColumn(name = "user_userId"),
-            inverseJoinColumns = @JoinColumn(name = "role_roleId"))
-    private Set<Role> roles = new HashSet<>();
-
-    public User addRole(Role role) {
-        this.roles.add(role);
-        return this;
+    public User(Local local) {
+        this.local = local;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+    public List<Veiculo> getCarros() {
+        return carros;
     }
 
-    public boolean hasRole(String roleName) {
-        for (Role role : roles) {
-            if (role.getAuthority().equals(roleName)) {
-                return true;
-            }
-        }
-        return false;
+    public void setCarros(List<Veiculo> carros) {
+        this.carros = carros;
     }
 
-    @Override
-    public String getUsername() {
-        return email;
+    public Local getLocal() {
+        return local;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public void setLocal(Local local) {
+        this.local = local;
     }
 }

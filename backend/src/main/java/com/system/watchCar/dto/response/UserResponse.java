@@ -36,17 +36,10 @@ public class UserResponse implements IResponseOK {
 
     public UserResponse toUser(User user){
         this.id = user.getIdUser();
-        this.name = user.getName();
+        this.name = user.getUserName();
         this.email = user.getEmail();
         this.cpf = user.getCpf();
-        this.alerta = (user.getAlerta()) != null ? user.getAlerta() : false;
         this.tipo = user.getRoles().stream().toList().get(1).getAuthority();
-        this.delegacia = user.getDelegate();
-        this.distintivo = user.getBadge();
-        this.departamento = user.getDepartamento();
-        this.cargo = user.getCargo();
-        this.ra = user.getRa();
-        this.ativo = user.getAtivo();
         success = Objects.nonNull(user.getCpf());
         return this;
     }

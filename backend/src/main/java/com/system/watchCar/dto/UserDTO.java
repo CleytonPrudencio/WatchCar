@@ -30,21 +30,14 @@ public class UserDTO {
 
     public UserDTO(User entity) {
         this.idUser = entity.getIdUser();
-        this.name = entity.getName();
+        this.name = entity.getUserName();
         this.password = entity.getPassword();
         this.email = entity.getEmail();
         this.cpf = entity.getCpf();
-        this.alerta = entity.getAlerta();
-        this.delegate = entity.getDelegate();
-        this.badge = entity.getBadge();
-        this.ra = entity.getRa();
-        this.departamento = entity.getDepartamento();
-        this.cargo = entity.getCargo();
-        this.ativo = entity.getAtivo();
 
         if (entity.getRoles() != null) {
             for (Role role : entity.getRoles()) {
-                roles.add(new RoleDTO(role.getRoleId(), role.getAuthority()));
+                roles.add(new RoleDTO(role.getIdRole(), role.getAuthority()));
             }
         }
     }

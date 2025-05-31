@@ -18,5 +18,9 @@ public class Veiculo {
 
     private String placa;
     private Integer ano;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
 
