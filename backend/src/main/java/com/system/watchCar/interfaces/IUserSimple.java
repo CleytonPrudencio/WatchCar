@@ -1,32 +1,47 @@
 package com.system.watchCar.interfaces;
 
 import com.system.watchCar.service.exceptions.UserExecption;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 public interface IUserSimple {
 
-    void setIdUser(Long id);
+    IUserSimple setIdUser(Long id);
     Long getIdUser();
 
-    void setUserName(String username);
-    String getUsername();
+    IUserSimple setUserName(String username);
+    String getUserName();
 
-    void setPassword(String password);
+    IUserSimple setPassword(String password);
     String getPassword();
 
-    void setEmail(String email);
+    IUserSimple setCpf(String cpf);
+    String getCpf();
+
+    IUserSimple setEmail(String email);
     String getEmail();
 
-    void setActiveUser(boolean active);
-    Boolean getActiveUser();
+    IUserSimple setUserActivated(boolean active);
+    Boolean getUserActivated();
+
+    IUserSimple addRole(IRole role);
+    Collection<? extends IRole> getRoles();
 
     default <U extends IUserSimple> U toUserSimple(Class<U> clazz) {
         try {
             U user = clazz.getDeclaredConstructor().newInstance();
             user.setIdUser(getIdUser());
-            user.setUserName(getUsername());
+            user.setUserName(getUserName());
             user.setPassword(getPassword());
             user.setEmail(getEmail());
-            user.setActiveUser(getActiveUser());
+            user.setCpf(getCpf());
+            user.setUserActivated(getUserActivated());
+
+            // Adiciona as roles ao usuário
+            for(IRole role : getRoles()) {
+                user.addRole(role);
+            }
             return user;
         }catch (Exception e){
             throw new UserExecption("Error converting to "+ clazz.getSimpleName());
