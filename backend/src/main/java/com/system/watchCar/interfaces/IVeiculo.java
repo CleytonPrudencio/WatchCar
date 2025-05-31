@@ -27,4 +27,21 @@ public interface IVeiculo {
 
     <U extends IUserSimple> IVeiculo setUser(U user);
     IUserSimple getUser();
+
+    default <V extends IVeiculo> V toVeiculo(Class<V> clazz) {
+        try {
+            V instance = clazz.getDeclaredConstructor().newInstance();
+            instance.setIdVeiculo(getIdVeiculo());
+            instance.setMarcaVeiculo(getMarcaVeiculo());
+            instance.setModeloVeiculo(getModeloVeiculo());
+            instance.setAnoVeiculo(getAnoVeiculo());
+            instance.setPlacaVeiculo(getPlacaVeiculo());
+            instance.setCorVeiculo(getCorVeiculo());
+            instance.setTipoVeiculo(getTipoVeiculo());
+            instance.setUser(getUser());
+            return instance;
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao converter o veículo para classe " + clazz.getSimpleName(), e);
+        }
+    }
 }
