@@ -5,18 +5,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "TB_AGENTE")
-public class Agente extends UserSimple implements IAgente {
+@Table(name = "TB_USER_AGENTE")
+public class UserAgente extends UserSimple implements IAgente {
 
     private String delegate;
     private String badge;
     private String ra;
 
-    public Agente() {
+    public UserAgente() {
     }
 
     @Override
-    public Agente setDelegate(String delegate) {
+    public UserAgente setDelegate(String delegate) {
         this.delegate = delegate;
         return this;
     }
@@ -27,7 +27,7 @@ public class Agente extends UserSimple implements IAgente {
     }
 
     @Override
-    public Agente setBadge(String badge) {
+    public UserAgente setBadge(String badge) {
         this.badge = badge;
         return this;
     }
@@ -38,7 +38,7 @@ public class Agente extends UserSimple implements IAgente {
     }
 
     @Override
-    public Agente setRa(String ra) {
+    public UserAgente setRa(String ra) {
         this.ra = ra;
         return this;
     }
