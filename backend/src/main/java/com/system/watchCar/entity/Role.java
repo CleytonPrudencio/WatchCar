@@ -3,13 +3,11 @@ package com.system.watchCar.entity;
 import com.system.watchCar.interfaces.IRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 
 @AllArgsConstructor
 @Entity
 @Table(name = "TB_ROLE")
-public class Role implements IRole, GrantedAuthority {
-    private static final long serialVersionUID = 1L;
+public class Role implements IRole{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,13 +18,13 @@ public class Role implements IRole, GrantedAuthority {
     }
 
     @Override
-    public Role setRoleId(Long roleId) {
+    public Role setIdRole(Long roleId) {
         this.roleId = roleId;
         return this;
     }
 
     @Override
-    public Long getRoleId() {
+    public Long getIdRole() {
         return roleId;
     }
 

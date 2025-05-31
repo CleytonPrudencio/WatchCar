@@ -17,13 +17,13 @@ public class RoleDTO implements IRole {
     }
 
     @Override
-    public RoleDTO setRoleId(Long roleId) {
+    public RoleDTO setIdRole(Long roleId) {
         this.roleId = roleId;
         return this;
     }
 
     @Override
-    public Long getRoleId() {
+    public Long getIdRole() {
         return roleId;
     }
 
