@@ -81,7 +81,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return cpf; // Usando CPF como username
+        return email;
     }
 
     @Override

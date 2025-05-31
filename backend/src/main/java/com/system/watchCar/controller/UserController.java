@@ -21,11 +21,6 @@ public class UserController {
         return ResponseEntity.ok(createdUser);
     }
 
-    @PostMapping(value = "/login")
-    public ResponseEntity<UserDTO> login(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(service.login(userDTO));
-    }
-
     @GetMapping(value = "/me")
     public ResponseEntity<UserDTO> getMe() {
         UserDTO dto = service.getMe();

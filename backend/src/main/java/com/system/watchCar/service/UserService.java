@@ -5,6 +5,7 @@ import com.system.watchCar.entity.Role;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.UserRepository;
+import com.system.watchCar.service.exceptions.UserExecption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,8 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -45,21 +44,10 @@ public class UserService implements UserDetailsService {
         return new UserDTO(entity);
     }
 
-    @Transactional
-    public UserDTO login(UserDTO userDTO) {
-        User entity = userRepository
-                .findByEmailAndPassword(userDTO.getEmail(), userDTO.getPassword())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email and password"));
-        return new UserDTO(entity);
-    }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User userEntity = userRepository.findByCpf(username);
-        if (Objects.isNull(userEntity)) {
-            throw new UsernameNotFoundException("User not found with username");
-        }
-        return userEntity;
+        return userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username"));
     }
 
     @Transactional(readOnly = true)
