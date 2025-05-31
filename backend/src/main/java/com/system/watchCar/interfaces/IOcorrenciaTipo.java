@@ -2,18 +2,18 @@ package com.system.watchCar.interfaces;
 
 import com.system.watchCar.service.exceptions.TipoOcorrenciaException;
 
-public interface ITipoOcorrencia {
+public interface IOcorrenciaTipo {
 
-    ITipoOcorrencia setIdTipoOcorrencia(Long id);
+    IOcorrenciaTipo setIdTipoOcorrencia(Long id);
     Long getIdTipoOcorrencia();
 
-    ITipoOcorrencia setNameTipoOcorrencia(String name);
+    IOcorrenciaTipo setNameTipoOcorrencia(String name);
     String getNameTipoOcorrencia();
 
-    ITipoOcorrencia setDescricaoTipoOcorrencia(String descricao);
+    IOcorrenciaTipo setDescricaoTipoOcorrencia(String descricao);
     String getDescricaoTipoOcorrencia();
 
-    default <T extends ITipoOcorrencia> T toTipoOcorrencia(Class<T> clazz) {
+    default <T extends IOcorrenciaTipo> T toTipoOcorrencia(Class<T> clazz) {
         try {
             T instance = clazz.getDeclaredConstructor().newInstance();
             instance.setIdTipoOcorrencia(getIdTipoOcorrencia());

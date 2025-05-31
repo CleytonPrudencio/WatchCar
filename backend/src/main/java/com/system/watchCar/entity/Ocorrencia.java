@@ -51,5 +51,5 @@ public class Ocorrencia {
 
     @ManyToOne
     @JoinColumn(name = "ID_TIPO_OCORRENCIA")
-    private TipoOcorrencia tipoOcorrencia;
+    private OcorrenciaTipo tipoOcorrencia;
 }

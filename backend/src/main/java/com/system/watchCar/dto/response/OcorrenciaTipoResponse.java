@@ -1,44 +1,48 @@
-package com.system.watchCar.dto;
+package com.system.watchCar.dto.response;
 
-import com.system.watchCar.interfaces.ITipoOcorrencia;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.system.watchCar.interfaces.IOcorrenciaTipo;
 
-public class TipoOcorrenciaDTO implements ITipoOcorrencia {
+public class OcorrenciaTipoResponse implements IOcorrenciaTipo {
 
     private Long idTipoOcorrencia;
     private String nameTipoOcorrencia;
     private String descricaoTipoOcorrencia;
 
-    public TipoOcorrenciaDTO() {
+    public OcorrenciaTipoResponse() {
     }
 
     @Override
-    public TipoOcorrenciaDTO setIdTipoOcorrencia(Long id) {
+    public OcorrenciaTipoResponse setIdTipoOcorrencia(Long id) {
         this.idTipoOcorrencia = id;
         return this;
     }
 
+    @JsonProperty("id")
     @Override
     public Long getIdTipoOcorrencia() {
         return idTipoOcorrencia;
     }
 
     @Override
-    public TipoOcorrenciaDTO setNameTipoOcorrencia(String name) {
+    public OcorrenciaTipoResponse setNameTipoOcorrencia(String name) {
         this.nameTipoOcorrencia = name;
         return this;
     }
 
+    @JsonProperty("name")
     @Override
     public String getNameTipoOcorrencia() {
         return nameTipoOcorrencia;
     }
 
     @Override
-    public TipoOcorrenciaDTO setDescricaoTipoOcorrencia(String descricao) {
+    public OcorrenciaTipoResponse setDescricaoTipoOcorrencia(String descricao) {
         this.descricaoTipoOcorrencia = descricao;
         return this;
     }
 
+    @JsonProperty("description")
     @Override
     public String getDescricaoTipoOcorrencia() {
         return descricaoTipoOcorrencia;

@@ -1,11 +1,11 @@
 package com.system.watchCar.entity;
 
-import com.system.watchCar.interfaces.ITipoOcorrencia;
+import com.system.watchCar.interfaces.IOcorrenciaTipo;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "TB_TIPO_OCORRENCIA")
-public class TipoOcorrencia implements ITipoOcorrencia {
+public class OcorrenciaTipo implements IOcorrenciaTipo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,11 +13,11 @@ public class TipoOcorrencia implements ITipoOcorrencia {
     private String nameTipoOcorrencia;
     private String descricaoTipoOcorrencia;
 
-    public TipoOcorrencia() {
+    public OcorrenciaTipo() {
     }
 
     @Override
-    public TipoOcorrencia setIdTipoOcorrencia(Long id) {
+    public OcorrenciaTipo setIdTipoOcorrencia(Long id) {
         this.idTipoOcorrencia = id;
         return this;
     }
@@ -28,7 +28,7 @@ public class TipoOcorrencia implements ITipoOcorrencia {
     }
 
     @Override
-    public TipoOcorrencia setNameTipoOcorrencia(String name) {
+    public OcorrenciaTipo setNameTipoOcorrencia(String name) {
         this.nameTipoOcorrencia = name;
         return this;
     }
@@ -39,7 +39,7 @@ public class TipoOcorrencia implements ITipoOcorrencia {
     }
 
     @Override
-    public TipoOcorrencia setDescricaoTipoOcorrencia(String descricao) {
+    public OcorrenciaTipo setDescricaoTipoOcorrencia(String descricao) {
         this.descricaoTipoOcorrencia = descricao;
         return this;
     }

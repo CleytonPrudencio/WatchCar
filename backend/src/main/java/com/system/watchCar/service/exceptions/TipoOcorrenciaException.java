@@ -1,6 +1,6 @@
 package com.system.watchCar.service.exceptions;
 
-import com.system.watchCar.interfaces.ITipoOcorrencia;
+import com.system.watchCar.interfaces.IOcorrenciaTipo;
 import com.system.watchCar.utils.Msg;
 
 import java.util.Objects;
@@ -14,7 +14,7 @@ public class TipoOcorrenciaException extends RuntimeException {
         super(message, exception);
     }
 
-    public static boolean validation(ITipoOcorrencia tipoOcorrencia) {
+    public static boolean validation(IOcorrenciaTipo tipoOcorrencia) {
         if (Objects.isNull(tipoOcorrencia)) throw new TipoOcorrenciaException("Tipo de ocorrência nulo");
         if (Objects.isNull(tipoOcorrencia.getNameTipoOcorrencia()) || tipoOcorrencia.getNameTipoOcorrencia().isBlank()) {
             throw new TipoOcorrenciaException("Nome do tipo de ocorrência nulo ou vazio");
