@@ -1,8 +1,6 @@
 package com.system.watchCar.interfaces;
 
-import com.system.watchCar.entity.TipoVeiculo;
-
-import java.time.LocalDate;
+import com.system.watchCar.enums.TipoVeiculo;
 
 public interface IVeiculo {
 
@@ -15,8 +13,8 @@ public interface IVeiculo {
     IVeiculo setModeloVeiculo(String modelo);
     String getModeloVeiculo();
 
-    IVeiculo setAnoVeiculo(LocalDate ano);
-    LocalDate getAnoVeiculo();
+    IVeiculo setAnoVeiculo(int ano);
+    int getAnoVeiculo();
 
     IVeiculo setPlacaVeiculo(String placa);
     String getPlacaVeiculo();
