@@ -6,18 +6,18 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "TB_GESTOR")
+@Table(name = "TB_USER_GESTOR")
 @PrimaryKeyJoinColumn(name = "user_id")
-public class Gestor extends Agente implements IGestorSecurity {
+public class UserGestor extends UserAgente implements IGestorSecurity {
 
     private String department;
     private String cargo;
 
-    public Gestor() {
+    public UserGestor() {
     }
 
     @Override
-    public Gestor setDepartment(String department) {
+    public UserGestor setDepartment(String department) {
         this.department = department;
         return this;
     }
@@ -33,7 +33,7 @@ public class Gestor extends Agente implements IGestorSecurity {
     }
 
     @Override
-    public Gestor setCargo(String cargo) {
+    public UserGestor setCargo(String cargo) {
         this.cargo = cargo;
         return this;
     }

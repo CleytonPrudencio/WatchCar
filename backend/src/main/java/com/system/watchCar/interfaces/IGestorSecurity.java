@@ -2,17 +2,17 @@ package com.system.watchCar.interfaces;
 
 import com.system.watchCar.service.exceptions.UserExecption;
 
-public interface IGestorSecurity extends IUserSimple{
+public interface IGestorSecurity extends IAgente{
 
-    void setDepartment(String department);
+    <G extends IGestorSecurity> G setDepartment(String department);
     String getDepartment();
 
-    void setCargo(String cargo);
+    <G extends IGestorSecurity> G setCargo(String cargo);
     String getCargo();
 
     default <U extends IGestorSecurity> U toGestor(Class<U> clazz) {
         try {
-            U gestor = toUserSimple(clazz);
+            U gestor = toAgente(clazz);
             gestor.setDepartment(getDepartment());
             gestor.setCargo(getCargo());
             return gestor;
