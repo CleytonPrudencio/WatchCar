@@ -154,14 +154,14 @@ public class ArquivoService {
 
         if (!encontrados.isEmpty()) {
             // Retorna o ID do primeiro encontrado
-            return encontrados.get(0).getId();
+            return encontrados.get(0).getIdArtigo();
         } else {
             // Cria novo artigo com rubrica como descrição
             Artigo novo = new Artigo();
             novo.setCodArtigo(rubrica); // ou algum valor padrão, se necessário
-            novo.setDescricao(rubrica);
+            novo.setDescricaoArtigo(rubrica);
             Artigo salvo = artigoRepository.save(novo);
-            return salvo.getId();
+            return salvo.getIdArtigo();
         }
     }
     private String getCellValueAsString(Cell cell) {
