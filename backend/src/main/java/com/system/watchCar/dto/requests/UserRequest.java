@@ -1,9 +1,9 @@
 package com.system.watchCar.dto.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.system.watchCar.dto.RoleDTO;
-import com.system.watchCar.interfaces.IAgente;
-import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.interfaces.IRole;
+import com.system.watchCar.interfaces.IUserSimple;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.br.CPF;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class UserRequest implements IGestorSecurity {
+public class UserRequest implements IUserSimple {
 
     private Long idUser;
     @NotBlank
@@ -24,14 +24,6 @@ public class UserRequest implements IGestorSecurity {
     @CPF
     private String cpf;
     private List<RoleDTO> roles = new ArrayList<>();
-
-    private String delegate;
-    private String badge;
-    private String ra;
-
-    private String department;
-    private String cargo;
-
     private Boolean activated = true;
 
     @Override
@@ -40,6 +32,7 @@ public class UserRequest implements IGestorSecurity {
         return this;
     }
 
+    @JsonProperty("id")
     @Override
     public Long getIdUser() {
         return idUser;
@@ -51,6 +44,7 @@ public class UserRequest implements IGestorSecurity {
         return this;
     }
 
+    @JsonProperty("name")
     @Override
     public String getUserName() {
         return userName;
@@ -95,6 +89,7 @@ public class UserRequest implements IGestorSecurity {
         return this;
     }
 
+    @JsonProperty("ativo")
     @Override
     public Boolean getUserActivated() {
         return activated;
@@ -109,59 +104,5 @@ public class UserRequest implements IGestorSecurity {
     @Override
     public List<RoleDTO> getRoles() {
         return roles;
-    }
-
-    @Override
-    public IAgente setDelegate(String delegate) {
-        return this;
-    }
-
-    @Override
-    public String getDelegate() {
-        return delegate;
-    }
-
-    @Override
-    public IAgente setBadge(String badge) {
-        this.badge = badge;
-        return this;
-    }
-
-    @Override
-    public String getBadge() {
-        return badge;
-    }
-
-    @Override
-    public IAgente setRa(String ra) {
-        this.ra = ra;
-        return this;
-    }
-
-    @Override
-    public String getRa() {
-        return ra;
-    }
-
-    @Override
-    public UserRequest setDepartment(String department) {
-        this.department = department;
-        return this;
-    }
-
-    @Override
-    public String getDepartment() {
-        return department;
-    }
-
-    @Override
-    public UserRequest setCargo(String cargo) {
-        this.cargo = cargo;
-        return this;
-    }
-
-    @Override
-    public String getCargo() {
-        return cargo;
     }
 }
