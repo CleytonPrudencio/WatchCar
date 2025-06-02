@@ -124,11 +124,6 @@ public class User implements IUserSimple, UserDetails {
         return this;
     }
 
-    public User addRole(Role role) {
-        this.roles.add(role);
-        return this;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles;

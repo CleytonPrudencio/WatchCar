@@ -2,9 +2,8 @@ package com.system.watchCar.controller;
 
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
-import com.system.watchCar.dto.requests.UserRequest;
+import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.response.UserSimpleResponse;
-import com.system.watchCar.entity.UserAgente;
 import com.system.watchCar.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,7 @@ public class UserController {
     private UserService service;
 
     @PostMapping(value = "/register")
-    public ResponseEntity<UserSimpleResponse> register(@RequestBody UserRequest request) {
+    public ResponseEntity<UserSimpleResponse> register(@RequestBody UserGestorRequest request) {
         UserSimpleResponse createdUser = service.save(request);
         return ResponseEntity.ok(createdUser);
     }

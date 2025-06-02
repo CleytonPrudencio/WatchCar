@@ -2,6 +2,7 @@ package com.system.watchCar.service;
 
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
+import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.requests.UserRequest;
 import com.system.watchCar.dto.response.UserSimpleResponse;
 import com.system.watchCar.entity.Role;
@@ -45,7 +46,7 @@ public class UserService implements UserDetailsService {
     RoleRepository roleRepository;
 
     @Transactional
-    public UserSimpleResponse save(UserRequest request) {
+    public UserSimpleResponse save(UserGestorRequest request) {
 
         User user = new User();
         user.setUserName(request.getUserName());

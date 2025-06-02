@@ -1,147 +1,74 @@
-package com.system.watchCar.dto;
+package com.system.watchCar.dto.requests;
 
+import com.system.watchCar.dto.LocalDTO;
+import com.system.watchCar.dto.VeiculoDTO;
 import com.system.watchCar.interfaces.IArtigo;
-import com.system.watchCar.interfaces.IRole;
-import com.system.watchCar.interfaces.IUserSimple;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@RequiredArgsConstructor
-public class DenunciaRequest implements IUserSimple, IArtigo {
+public class DenunciaRequest implements IArtigo {
 
     // Pessoa
-    private Long idUser;
-    @NotBlank
-    private String userName;
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String cpf;
-    private Boolean activated;
-    @NotEmpty
-    private List<RoleDTO> roles = new ArrayList<>();
+    private UserRequest responsavel;
+    private UserRequest denunciante;
 
     // Local
-    private LocalDTO local;
-    private LocalDTO localOcorrencia;
+    private LocalRequest local;
+    private LocalRequest localOcorrencia;
 
     // Veículo
-    private List<VeiculoDTO> veiculos = new ArrayList<>();
+    private List<VeiculoRequest> veiculos = new ArrayList<>();
 
     // Artigo
     private Long idArtigo;
     private String codArtigo;
     private String descricaoArtigo;
 
-    @Override
-    public DenunciaRequest setIdUser(Long id) {
-        this.idUser = id;
-        return this;
+    public DenunciaRequest() {
     }
 
-    @Override
-    public Long getIdUser() {
-        return idUser;
+    public UserRequest getResponsavel() {
+        return responsavel;
     }
 
-    @Override
-    public DenunciaRequest setUserName(String username) {
-        this.userName = username;
-        return this;
+    public void setResponsavel(UserRequest responsavel) {
+        this.responsavel = responsavel;
     }
 
-    @Override
-    public String getUserName() {
-        return userName;
+    public UserRequest getDenunciante() {
+        return denunciante;
     }
 
-    @Override
-    public DenunciaRequest setPassword(String password) {
-        return this;
+    public void setDenunciante(UserRequest denunciante) {
+        this.denunciante = denunciante;
     }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public DenunciaRequest setCpf(String cpf) {
-        this.cpf = cpf;
-        return this;
-    }
-
-    @Override
-    public String getCpf() {
-        return cpf;
-    }
-
-    @Override
-    public DenunciaRequest setEmail(String email) {
-        this.email = email;
-        return this;
-    }
-
-    @Override
-    public String getEmail() {
-        return email;
-    }
-
-    @Override
-    public List<RoleDTO> getRoles() {
-        return roles;
-    }
-
-    @Override
-    public DenunciaRequest setUserActivated(boolean active) {
-        this.activated = active;
-        return this;
-    }
-
-    @Override
-    public Boolean getUserActivated() {
-        return activated;
-    }
-
-    @Override
-    public DenunciaRequest addRole(IRole role) {
-        roles.add(role.toRole(RoleDTO.class));
-        return this;
-    }
-
-    public DenunciaRequest setLocal(LocalDTO local) {
+    public DenunciaRequest setLocal(LocalRequest local) {
         this.local = local;
         return this;
     }
 
-    public LocalDTO getLocal() {
+    public LocalRequest getLocal() {
         return local;
     }
 
-    public DenunciaRequest setLocalOcorrencia(LocalDTO local) {
+    public DenunciaRequest setLocalOcorrencia(LocalRequest local) {
         this.localOcorrencia = local;
         return this;
     }
 
-    public LocalDTO getLocalOcorrencia() {
+    public LocalRequest getLocalOcorrencia() {
         return localOcorrencia;
     }
 
 
-    public DenunciaRequest addVeiculos(VeiculoDTO veiculo) {
+    public DenunciaRequest addVeiculos(VeiculoRequest veiculo) {
         this.veiculos.add(veiculo);
         return this;
     }
 
-    public List<VeiculoDTO> getVeiculos() {
+    public List<VeiculoRequest> getVeiculos() {
         return veiculos;
     }
 

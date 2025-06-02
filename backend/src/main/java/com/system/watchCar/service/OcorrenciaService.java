@@ -1,31 +1,23 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.*;
+import com.system.watchCar.dto.requests.DenunciaRequest;
+import com.system.watchCar.dto.requests.VeiculoRequest;
 import com.system.watchCar.entity.*;
-import com.system.watchCar.enums.RoleType;
 import com.system.watchCar.enums.TipoTemplateEmail;
 import com.system.watchCar.enums.VeiculoType;
 import com.system.watchCar.repository.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
+import com.system.watchCar.service.exceptions.UserExecption;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class OcorrenciaService {
@@ -39,20 +31,18 @@ public class OcorrenciaService {
     private final EmailService emailService;
     private final LocalRepository localRepository;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
 
 
-    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, BCryptPasswordEncoder passwordEncoder) {
+    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService) {
         this.repository = repository;
         this.userRepository = userRepository;
-        this.roleService = roleService;
         this.veiculoRepository = veiculoRepository;
         this.responsavelRepository = responsavelRepository;
         this.artigoRepository = artigoRepository;
         this.acaoInvestigacaoRepository = acaoInvestigacaoRepository;
         this.emailService = emailService;
         this.localRepository = localRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.roleService = roleService;
     }
 
     @Transactional
@@ -78,9 +68,6 @@ public class OcorrenciaService {
             String usuarioNome, String usuarioEmail, String veiculoMarca, String veiculoModelo, String veiculoPlaca,
             LocalDateTime dataInicio, LocalDateTime dataFim,
             Long user, Pageable pageable) {
-
-
-
         List<Predicate> predicates = new ArrayList<>();
         return null;
     }
@@ -88,66 +75,64 @@ public class OcorrenciaService {
 
     @Transactional
     public Ocorrencia criarDenuncia(DenunciaRequest request) {
-        User usuario;
-        if (request.getIdUsuario() != null) {
-            usuario = userRepository.findById(request.getIdUsuario())
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        } else {
-            usuario = new User();
-            String encodedPassword = passwordEncoder.encode("123");
-            Role role = roleService.findByAuthority(RoleType.PUBLICO).toRole(Role.class);
-            usuario.setUserName(request.getUsername());
-            usuario.setCpf(request.getCpf());
-            usuario.setEmail(request.getEmail());
-            usuario.addRole(role);
-            usuario.setPassword(encodedPassword);
-            usuario.setUserActivated(false);
-            usuario = userRepository.save(usuario);
+
+        // Validar se o usuário responsável existe
+        UserExecption.validation(request.getResponsavel());
+        User responsavel = userRepository.findByEmail(request.getResponsavel().getEmail())
+                .orElseThrow(() -> new UserExecption("Usuário responsável não encontrado"));
+
+        // Validar se o usuário denunciante existe
+        UserExecption.validation(request.getDenunciante());
+        User denunciante = userRepository.findByEmail(request.getDenunciante().getEmail())
+                .orElseThrow(() -> new UserExecption("Usuário denunciante não encontrado"));
+
+        // Veículo
+        if(request.getVeiculos().isEmpty()){
+            throw new UserExecption("Nenhum veículo informado na denúncia");
+        }
+        // Cadastrado dos veículos
+        for(VeiculoRequest veiculo : request.getVeiculos()) {
+            Veiculo veiculoEntity = new Veiculo();
+            veiculoEntity.setMarcaVeiculo(veiculo.getMarcaVeiculo());
+            veiculoEntity.setModeloVeiculo(veiculo.getModeloVeiculo());
+            veiculoEntity.setPlacaVeiculo(veiculo.getPlacaVeiculo());
+            veiculoEntity.setAnoVeiculo(veiculo.getAnoVeiculo());
+            veiculoEntity.setCorVeiculo(veiculo.getCorVeiculo());
+            veiculoEntity.setTipoVeiculo(veiculo.getTipoVeiculo());
+            veiculoEntity.setUser(denunciante);
+            veiculoRepository.save(veiculoEntity);
         }
 
-
-        if (!isValidStatus(request.getStatusDenuncia())) {
-            throw new RuntimeException("Status da denúncia inválido");
+        // Local da ocorrência
+        if (Objects.isNull(request.getLocalOcorrencia())
+                || Objects.isNull(request.getLocalOcorrencia().getCep())
+                || request.getLocalOcorrencia().getCep().isEmpty()) {
+            throw new UserExecption("Local da ocorrência não informado");
         }
-
-
-        // Todo: Validar se o artigo existe
-        VeiculoType tipo = VeiculoType.CARRO;
-
-
-        Veiculo veiculo = new Veiculo();
-        veiculo.setTipoVeiculo(tipo);
-        veiculo.setAnoVeiculo(request.getAno());
-        veiculo.setPlacaVeiculo(request.getPlaca());
-        veiculo = veiculoRepository.save(veiculo);
-
-        Local local = new Local();
-        local.setCep(request.getCep());
-        local.setCidade(request.getCidade());
-        local.setBairro(request.getBairro());
-        local.setEstado(request.getEstado());
-        local.setLogradouro(request.getLogradouro());
-        local = localRepository.save(local);
+        Local local = null;
+        if (localRepository.findByCep(request.getLocalOcorrencia().getCep()).isPresent()){
+            local = localRepository.findByCep(request.getLocalOcorrencia().getCep()).get();
+        }else{
+            local.setCep(request.getLocalOcorrencia().getCep());
+            local.setCidade(request.getLocalOcorrencia().getCidade());
+            local.setBairro(request.getLocalOcorrencia().getBairro());
+            local.setEstado(request.getLocalOcorrencia().getEstado());
+            local.setLogradouro(request.getLocalOcorrencia().getLogradouro());
+            local = localRepository.save(local);
+        }
 
         Ocorrencia ocorrencia = new Ocorrencia();
 
-        Responsavel responsavel = new Responsavel();
-        responsavel.setDenuncia(ocorrencia);
-        responsavel.setUsuario(usuario);
-        responsavel.setDataCriacao(LocalDateTime.now());
-        responsavelRepository.save(responsavel);
-
-
-        if (request.getReceberAlertas()) {
+        if (true) {
 
             // Preparar os dados para o template
             Map<String, Object> templateVariables = new HashMap<>();
             templateVariables.put("ocorrencia", ocorrencia);
-            templateVariables.put("denunciante", usuario);
+            templateVariables.put("denunciante", denunciante);
 
             // Enviar o e-mail com o template
             emailService.enviarEmailComTemplate(
-                    usuario.getEmail(),
+                    denunciante.getEmail(),
                     TipoTemplateEmail.NOVA_DENUNCIA,
                     templateVariables
             );

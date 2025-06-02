@@ -1,8 +1,9 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.ArquivoDTO;
-import com.system.watchCar.dto.DenunciaRequest;
+import com.system.watchCar.dto.requests.DenunciaRequest;
 import com.system.watchCar.entity.Artigo;
+import com.system.watchCar.enums.VeiculoType;
 import com.system.watchCar.repository.ArtigoRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
@@ -87,29 +88,24 @@ public class ArquivoService {
                     arquivos.add(dto);
                     var id = obterOuCriarArtigoPorRubrica(dto.getRubrica());
                     DenunciaRequest denunciaRequest = new DenunciaRequest();
-                    denunciaRequest.setIdUsuario(1L);
-                    denunciaRequest.setCep(dto.getCep());
-                    denunciaRequest.setBairro(dto.getBairro());
-                    denunciaRequest.setAno(parseInteger(dto.getAno_modelo()));
-                    denunciaRequest.setCidade(dto.getCidade());
-                    denunciaRequest.setLogradouro(dto.getLogradouro());
-                    denunciaRequest.setMarca(dto.getDescr_tipo_veiculo());
-                    denunciaRequest.setTipo(dto.getDescr_tipo_veiculo());
-                    denunciaRequest.setPlaca(dto.getPlaca_veiculo());
-                    denunciaRequest.setEstado("São Paulo");
-                    denunciaRequest.setStatusDenuncia("Em andamento");
-                    denunciaRequest.setHoraOcorrencia(
-                            dto.getHora_ocorrncia() != null ? dto.getHora_ocorrncia().toString() : ""
-                    );
-                    denunciaRequest.setDescricao(dto.getDescr_ocorrencia_veiculo());
-                    if (dto.getData_ocorrncia_bo() != null && dto.getHora_ocorrncia() != null) {
-                        denunciaRequest.setDataHora(LocalDateTime.of(dto.getData_ocorrncia_bo(), dto.getHora_ocorrncia()));
-                    } else {
-                        denunciaRequest.setDataHora(LocalDateTime.now()); // ou null, ou outro default
-                    }
-                    denunciaRequest.setCor(dto.getDesc_cor_veiculo());
-                    denunciaRequest.setArtigoLei(String.valueOf(id));
-                    denunciaRequest.setReceberAlertas(true);
+                    denunciaRequest.getDenunciante().setIdUser(1L);
+                    denunciaRequest.getLocalOcorrencia().setCep(dto.getCep());
+                    denunciaRequest.getLocalOcorrencia().setBairro(dto.getBairro());
+                    denunciaRequest.getLocalOcorrencia().setCidade(dto.getCidade());
+                    denunciaRequest.getLocalOcorrencia().setLogradouro(dto.getLogradouro());
+                    denunciaRequest.getLocalOcorrencia().setEstado("São Paulo");
+
+                    // Veículo
+                    denunciaRequest.getVeiculos().get(0).setMarcaVeiculo(dto.getDescr_tipo_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setModeloVeiculo(dto.getDescr_marca_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setAnoVeiculo(parseInteger(dto.getAno_modelo()));
+                    denunciaRequest.getVeiculos().get(0).setPlacaVeiculo(sanitizeString(dto.getPlaca_veiculo()));
+                    denunciaRequest.getVeiculos().get(0).setCorVeiculo(dto.getDesc_cor_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setTipoVeiculo(VeiculoType.valueOf(dto.getDescr_tipo_veiculo()));
+
+                    denunciaRequest.setCodArtigo(String.valueOf(id));
+                    // Todo: Verificar se o usuário quer receber alertas
+                    //denunciaRequest.setReceberAlertas(true);
                     try {
                         ocorrenciaService.criarDenuncia(denunciaRequest);
                     } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.system.watchCar.controller;
 
 import com.system.watchCar.dto.*;
+import com.system.watchCar.dto.requests.DenunciaRequest;
 import com.system.watchCar.dto.requests.UserRequest;
 import com.system.watchCar.entity.Ocorrencia;
 import com.system.watchCar.entity.User;
