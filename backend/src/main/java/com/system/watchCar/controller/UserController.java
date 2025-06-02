@@ -1,5 +1,6 @@
 package com.system.watchCar.controller;
 
+import com.system.watchCar.controller.openapi.UserOpenApi;
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class UserController implements UserOpenApi{
+public class UserController implements UserOpenApi {
 
     @Autowired
     private UserService service;

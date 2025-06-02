@@ -1,4 +1,4 @@
-package com.system.watchCar.controller;
+package com.system.watchCar.controller.openapi;
 
 import com.system.watchCar.dto.exceptions.ErrorDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
