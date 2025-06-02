@@ -2,10 +2,12 @@ package com.system.watchCar.entity;
 
 import com.system.watchCar.interfaces.IAgente;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "TB_USER_AGENTE")
+@PrimaryKeyJoinColumn(name = "user_id")
 public class UserAgente extends User implements IAgente {
 
     private String delegate;

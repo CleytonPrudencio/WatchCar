@@ -7,6 +7,7 @@ import com.system.watchCar.dto.response.UserSimpleResponse;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.entity.UserAgente;
 import com.system.watchCar.entity.UserGestor;
+import com.system.watchCar.interfaces.IUserSimple;
 import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.UserAgenteRepository;
 import com.system.watchCar.repository.UserGestorRepository;
@@ -89,8 +90,20 @@ public class UserService implements UserDetailsService {
         } else if (Objects.nonNull(agente)) {
             return userAgenteRepository.save(agente).toUserSimple(UserSimpleResponse.class);
         } else {
-            return userRepository.save(user).toUserSimple(UserSimpleResponse.class);
+            return save(user).toUserSimple(UserSimpleResponse.class);
         }
+    }
+
+    @Transactional
+    public IUserSimple save(IUserSimple entity) {
+        return userRepository.save(entity.toUserSimple(User.class));
+    }
+
+    @Transactional(readOnly = true)
+    public UserDTO findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(UserDTO::new)
+                .orElseThrow(() -> new UserExecption("User not found with email: " + email));
     }
 
     @Override

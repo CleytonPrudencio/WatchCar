@@ -8,7 +8,6 @@ import com.system.watchCar.dto.requests.DenunciaRequest;
 import com.system.watchCar.dto.requests.VeiculoRequest;
 import com.system.watchCar.entity.*;
 import com.system.watchCar.enums.OcorrenciaStatus;
-import com.system.watchCar.enums.TipoTemplateEmail;
 import com.system.watchCar.repository.*;
 import com.system.watchCar.service.exceptions.UserExecption;
 import jakarta.persistence.criteria.Predicate;
@@ -25,24 +24,27 @@ import java.util.*;
 @Service
 public class OcorrenciaService {
 
-    private final OcorrenciaRepository repository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final UserGestorRepository userGestorRepository;
-    private final VeiculoRepository veiculoRepository;
     private final ResponsavelRepository responsavelRepository;
+
+    private final VeiculoRepository veiculoRepository;
     private final ArtigoRepository artigoRepository;
     private final AcaoInvestigacaoRepository acaoInvestigacaoRepository;
     private final EmailService emailService;
     private final LocalRepository localRepository;
     private final RoleService roleService;
 
+    private final OcorrenciaRepository repository;
     private final OcorrenciaRepository ocorrenciaRepository;
     private final OcorrenciaTipoRepository ocorrenciaTipoRepository;
 
 
-    public OcorrenciaService(OcorrenciaRepository repository, UserRepository userRepository, UserGestorRepository userGestorRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, OcorrenciaRepository ocorrenciaRepository, OcorrenciaTipoRepository ocorrenciaTipoRepository) {
-        this.repository = repository;
+    public OcorrenciaService(UserRepository userRepository, OcorrenciaRepository repository, UserService userService, UserGestorRepository userGestorRepository, VeiculoRepository veiculoRepository, ResponsavelRepository responsavelRepository, ArtigoRepository artigoRepository, AcaoInvestigacaoRepository acaoInvestigacaoRepository, EmailService emailService, LocalRepository localRepository, RoleService roleService, OcorrenciaRepository ocorrenciaRepository, OcorrenciaTipoRepository ocorrenciaTipoRepository) {
         this.userRepository = userRepository;
+        this.repository = repository;
+        this.userService = userService;
         this.userGestorRepository = userGestorRepository;
         this.veiculoRepository = veiculoRepository;
         this.responsavelRepository = responsavelRepository;
@@ -87,7 +89,7 @@ public class OcorrenciaService {
     public Ocorrencia criarDenuncia(DenunciaRequest request) {
 
         // Validar se o usuário responsável existe
-        if(request.getIdResponsavel()<1) {
+        if (request.getIdResponsavel() < 1) {
             throw new UserExecption("Responsável inválido");
         }
         UserGestor responsavel = null;
@@ -98,8 +100,13 @@ public class OcorrenciaService {
 
         // Validar se o usuário denunciante existe
         UserExecption.validation(request.getDenunciante());
-        User denunciante = userRepository.findByEmail(request.getDenunciante().getEmail())
-                .orElseThrow(() -> new UserExecption("Usuário denunciante não encontrado"));
+        User denunciante = null;
+        if (userRepository.findByEmail(request.getDenunciante().getEmail()).isPresent()) {
+            denunciante = userService.findByEmail(request.getDenunciante().getEmail()).toUserSimple(User.class);
+        } else {
+            denunciante = userService.save(request.getDenunciante()).toUserSimple(User.class);
+        }
+
 
         // Veículo
         if (request.getVeiculos().isEmpty()) {
@@ -110,6 +117,19 @@ public class OcorrenciaService {
         if (Objects.isNull(request.getLocal())
                 || Objects.isNull(request.getLocal().getCep())
                 || request.getLocal().getCep().isEmpty()) {
+            throw new UserExecption("Local da ocorrência não informado");
+        }
+        Local local = null;
+        if (localRepository.findByCep(request.getLocal().getCep()).isPresent()) {
+            local = localRepository.findByCep(request.getLocal().getCep()).get();
+        } else {
+            local = localRepository.save(request.getLocal().toLocal(Local.class));
+        }
+
+        // Local da ocorrência
+        if (Objects.isNull(request.getLocalOcorrencia())
+                || Objects.isNull(request.getLocalOcorrencia().getCep())
+                || request.getLocalOcorrencia().getCep().isEmpty()) {
             throw new UserExecption("Local da ocorrência não informado");
         }
         Local localOcorrencia = null;
@@ -125,8 +145,8 @@ public class OcorrenciaService {
         ocorrencia.setStatusOcorrencia(OcorrenciaStatus.PENDENTE);
 
         // Tipo de ocorrência
-        OcorrenciaTipo tipoOcorrencia = ocorrenciaTipoRepository.findById(ocorrencia.getIdOcorrencia())
-                        .orElseThrow(()-> new UserExecption("Tipo de ocorrência inválido"));
+        OcorrenciaTipo tipoOcorrencia = ocorrenciaTipoRepository.findById(request.getTipo())
+                .orElseThrow(() -> new UserExecption("Tipo de ocorrência inválido"));
         ocorrencia.setTipoOcorrencia(tipoOcorrencia);
 
         // Artigo
@@ -134,38 +154,43 @@ public class OcorrenciaService {
             throw new UserExecption("Artigo inválido");
         }
         Artigo artigo = artigoRepository.findById(request.getIdArtigo())
-                .orElseThrow(()-> new UserExecption("Artigo não encontrado"));
+                .orElseThrow(() -> new UserExecption("Artigo não encontrado"));
         ocorrencia.setArtigo(artigo);
 
         // Responsável
         ocorrencia.setLocalOcorrencia(request.getLocalOcorrencia());
         ocorrencia.setGestorSecurity(responsavel);
+        ocorrencia.setLocalOcorrencia(local);
 
         // Denunciante
         ocorrencia.setDenunciante(denunciante);
         ocorrencia.setDataHoraOcorrencia(request.getDataHora());
         ocorrencia.setLocalDaOcorrencia(localOcorrencia);
         // Veículos
-        List<Veiculo> veiculos = new ArrayList<>();
+        if (request.getVeiculos().isEmpty()) {
+            throw new UserExecption("Nenhum veículo informado na denúncia");
+        }
         for (VeiculoRequest veiculo : request.getVeiculos()) {
-            veiculos.add(veiculoRepository.save(veiculo.toVeiculo(Veiculo.class)));
+            veiculo.setUser(denunciante);
+            ocorrencia.addVeiculosOcorrencia(veiculoRepository.save(veiculo.toVeiculo(Veiculo.class)));
         }
 
 
-        if (true) {
-
-            // Preparar os dados para o template
-            Map<String, Object> templateVariables = new HashMap<>();
-            templateVariables.put("ocorrencia", ocorrencia);
-            templateVariables.put("denunciante", denunciante);
-
-            // Enviar o e-mail com o template
-            emailService.enviarEmailComTemplate(
-                    denunciante.getEmail(),
-                    TipoTemplateEmail.NOVA_DENUNCIA,
-                    templateVariables
-            );
-        }
+        // Todo: Implementar lógica para enviar e-mail de notificação
+//        if (true) {
+//
+//            // Preparar os dados para o template
+//            Map<String, Object> templateVariables = new HashMap<>();
+//            templateVariables.put("ocorrencia", ocorrencia);
+//            templateVariables.put("denunciante", denunciante);
+//
+//            // Enviar o e-mail com o template
+//            emailService.enviarEmailComTemplate(
+//                    denunciante.getEmail(),
+//                    TipoTemplateEmail.NOVA_DENUNCIA,
+//                    templateVariables
+//            );
+//        }
         return ocorrenciaRepository.save(ocorrencia);
     }
 

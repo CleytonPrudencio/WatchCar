@@ -15,6 +15,7 @@ public class VeiculoRequest implements IVeiculo {
     private String placaVeiculo;
     private String corVeiculo;
     private VeiculoType veiculoType;
+    private UserRequest user;
 
     public VeiculoRequest() {
     }
@@ -105,12 +106,13 @@ public class VeiculoRequest implements IVeiculo {
 
     @JsonIgnore
     @Override
-    public <U extends IUserSimple> IVeiculo setUser(U user) {
-        return null;
+    public <U extends IUserSimple> VeiculoRequest setUser(U user) {
+        this.user = user.toUserSimple(UserRequest.class);
+        return this;
     }
 
     @Override
-    public IUserSimple getUser() {
-        return null;
+    public UserRequest getUser() {
+        return user;
     }
 }
