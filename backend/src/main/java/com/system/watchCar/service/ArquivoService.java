@@ -1,6 +1,7 @@
 package com.system.watchCar.service;
 
 import com.system.watchCar.dto.ArquivoDTO;
+import com.system.watchCar.dto.requests.ArtigoRequest;
 import com.system.watchCar.dto.requests.DenunciaRequest;
 import com.system.watchCar.entity.Artigo;
 import com.system.watchCar.enums.VeiculoType;
@@ -13,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -89,11 +89,11 @@ public class ArquivoService {
                     var id = obterOuCriarArtigoPorRubrica(dto.getRubrica());
                     DenunciaRequest denunciaRequest = new DenunciaRequest();
                     denunciaRequest.getDenunciante().setIdUser(1L);
-                    denunciaRequest.getLocalOcorrencia().setCep(dto.getCep());
-                    denunciaRequest.getLocalOcorrencia().setBairro(dto.getBairro());
-                    denunciaRequest.getLocalOcorrencia().setCidade(dto.getCidade());
-                    denunciaRequest.getLocalOcorrencia().setLogradouro(dto.getLogradouro());
-                    denunciaRequest.getLocalOcorrencia().setEstado("São Paulo");
+                    denunciaRequest.getLocal().setCep(dto.getCep());
+                    denunciaRequest.getLocal().setBairro(dto.getBairro());
+                    denunciaRequest.getLocal().setCidade(dto.getCidade());
+                    denunciaRequest.getLocal().setLogradouro(dto.getLogradouro());
+                    denunciaRequest.getLocal().setEstado("São Paulo");
 
                     // Veículo
                     denunciaRequest.getVeiculos().get(0).setMarcaVeiculo(dto.getDescr_tipo_veiculo());
@@ -103,7 +103,8 @@ public class ArquivoService {
                     denunciaRequest.getVeiculos().get(0).setCorVeiculo(dto.getDesc_cor_veiculo());
                     denunciaRequest.getVeiculos().get(0).setTipoVeiculo(VeiculoType.valueOf(dto.getDescr_tipo_veiculo()));
 
-                    denunciaRequest.setCodArtigo(String.valueOf(id));
+                    ArtigoRequest artigo = new ArtigoRequest();
+                    artigo.setIdArtigo(id);
                     // Todo: Verificar se o usuário quer receber alertas
                     //denunciaRequest.setReceberAlertas(true);
                     try {

@@ -1,34 +1,32 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.dto.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.system.watchCar.interfaces.IArtigo;
 import jakarta.persistence.*;
 
-@Entity
-@Table(name = "TB_ARTIGOS_CRIMINAIS")
-public class Artigo implements IArtigo {
+public class ArtigoRequest implements IArtigo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idArtigo;
     private String codArtigo;
     private String descricaoArtigo;
 
-    public Artigo() {
+    public ArtigoRequest() {
     }
 
     @Override
-    public Artigo setIdArtigo(Long id) {
+    public ArtigoRequest setIdArtigo(Long id) {
         this.idArtigo = id;
         return this;
     }
 
+    @JsonProperty("id")
     @Override
     public Long getIdArtigo() {
         return idArtigo;
     }
 
     @Override
-    public Artigo setCodArtigo(String cod) {
+    public ArtigoRequest setCodArtigo(String cod) {
         this.codArtigo = cod;
         return this;
     }
@@ -39,11 +37,12 @@ public class Artigo implements IArtigo {
     }
 
     @Override
-    public Artigo setDescricaoArtigo(String descricao) {
+    public ArtigoRequest setDescricaoArtigo(String descricao) {
         this.descricaoArtigo = descricao;
         return this;
     }
 
+    @JsonProperty("description")
     @Override
     public String getDescricaoArtigo() {
         return descricaoArtigo;

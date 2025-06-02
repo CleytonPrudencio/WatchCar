@@ -23,13 +23,13 @@ public class OcorrenciaException extends RuntimeException {
         }
         if (Objects.isNull(ocorrencia.getDataHoraOcorrencia()))
             throw new OcorrenciaException("Escolha a data e hora da ocorrência.");
-        if (Objects.isNull(ocorrencia.getLocalOcorrencia()))
+        if (Objects.isNull(ocorrencia.getLocal()))
             throw new OcorrenciaException("Escolha o local onde foi feita a ocorrência.");
         if (Objects.isNull(ocorrencia.getGestorSecurity()))
             throw new OcorrenciaException("Escolha o gestor de segurança da ocorrência.");
         if (Objects.isNull(ocorrencia.getLocalDaOcorrencia()))
             throw new OcorrenciaException("Escolha o local da ocorrência.");
-        if (Objects.isNull(ocorrencia.getVeiculoOcorrencia()))
+        if (Objects.isNull(ocorrencia.getVeiculosOcorrencia()))
             throw new OcorrenciaException("Escolha o veículo da envolvido na ocorrência.");
         if (Objects.isNull(ocorrencia.getTipoOcorrencia()))
             throw new OcorrenciaException("Escolha o tipo de ocorrência.");

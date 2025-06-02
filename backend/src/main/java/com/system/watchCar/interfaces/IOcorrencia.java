@@ -7,49 +7,46 @@ import jakarta.persistence.Enumerated;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 public interface IOcorrencia {
 
     IOcorrencia setIdOcorrencia(Long id);
-
     Long getIdOcorrencia();
 
-    IOcorrencia setDataOcorrencia(LocalDate name);
-
+    IOcorrencia setDataOcorrencia(LocalDate data);
     LocalDate getDataOcorrencia();
 
     IOcorrencia setDescricaoOcorrencia(String descricao);
-
     String getDescricaoOcorrencia();
 
     IOcorrencia setDataHoraOcorrencia(LocalDateTime dataHora);
-
     LocalDateTime getDataHoraOcorrencia();
 
     <L extends ILocal> IOcorrencia setLocalOcorrencia(L local);
-
-    <L extends ILocal> L getLocalOcorrencia();
+    <L extends ILocal> L getLocal();
 
     <U extends IGestorSecurity> IOcorrencia setGestorSecurity(U gestor);
-
     <U extends IGestorSecurity> U getGestorSecurity();
 
-    <L extends ILocal> IOcorrencia setLocalDaOcorrencia(L local);
+    <U extends IUserSimple> U getDenunciante();
+    <U extends IUserSimple> IOcorrencia setDenunciante(U denunciante);
 
+    <L extends ILocal> IOcorrencia setLocalDaOcorrencia(L local);
     <L extends ILocal> L getLocalDaOcorrencia();
 
-    <V extends IVeiculo> IOcorrencia setVeiculoOcorrencia(V veiculo);
-
-    <V extends IVeiculo> V getVeiculoOcorrencia();
+    <V extends IVeiculo> IOcorrencia addVeiculosOcorrencia(V veiculo);
+    <V extends IVeiculo> Collection<V> getVeiculosOcorrencia();
 
     <T extends IOcorrenciaTipo> IOcorrencia setTipoOcorrencia(T tipo);
-
     <T extends IOcorrenciaTipo> T getTipoOcorrencia();
 
     @Enumerated(EnumType.STRING)
     IOcorrencia setStatusOcorrencia(OcorrenciaStatus status);
-
     OcorrenciaStatus getStatusOcorrencia();
+
+    IOcorrencia setArtigo(IArtigo artigo);
+    IArtigo getArtigo();
 
     default <C extends IOcorrencia> C toOcorrencia(Class<C> clazz) {
         try {
@@ -59,12 +56,15 @@ public interface IOcorrencia {
                     .setDataOcorrencia(getDataOcorrencia())
                     .setDescricaoOcorrencia(getDescricaoOcorrencia())
                     .setDataHoraOcorrencia(getDataHoraOcorrencia())
-                    .setLocalOcorrencia(getLocalOcorrencia())
+                    .setLocalOcorrencia(getLocal())
                     .setGestorSecurity(getGestorSecurity())
                     .setLocalDaOcorrencia(getLocalDaOcorrencia())
-                    .setVeiculoOcorrencia(getVeiculoOcorrencia())
                     .setTipoOcorrencia(getTipoOcorrencia())
-                    .setStatusOcorrencia(getStatusOcorrencia());
+                    .setStatusOcorrencia(getStatusOcorrencia())
+                    .setArtigo(getArtigo());
+            for(IVeiculo veiculo : getVeiculosOcorrencia()) {
+                        instance.addVeiculosOcorrencia(veiculo);
+            }
             return instance;
         } catch (Exception e) {
             throw new OcorrenciaException("Error converting to Ocorrencia: " + clazz.getSimpleName(), e);

@@ -3,10 +3,11 @@ package com.system.watchCar.entity;
 import com.system.watchCar.enums.OcorrenciaStatus;
 import com.system.watchCar.interfaces.*;
 import jakarta.persistence.*;
-import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "TB_OCORRENCIA")
@@ -28,12 +29,24 @@ public class Ocorrencia implements IOcorrencia {
     private UserGestor gestorSecurity;
 
     @ManyToOne
+    @JoinColumn(name = "denunciante_id")
+    private User denunciante;
+
+    @ManyToOne
     @JoinColumn(name = "local_ocorrencia_id")
     private Local localDaOcorrencia;
 
+    @ManyToMany
+    @JoinTable(
+            name = "TB_OCORRENCIA_VEICULO",
+            joinColumns = @JoinColumn(name = "ocorrencia_id"),
+            inverseJoinColumns = @JoinColumn(name = "veiculo_id")
+    )
+    private Set<Veiculo> veiculos = new HashSet<>();
+
     @ManyToOne
-    @JoinColumn(name = "veiculo_id")
-    private Veiculo veiculoOcorrencia;
+    @JoinColumn(name = "artigo_id")
+    private Artigo artigo;
 
     @ManyToOne
     @JoinColumn(name = "tipo_ocorrencia_id")
@@ -56,8 +69,9 @@ public class Ocorrencia implements IOcorrencia {
     }
 
     @Override
-    public Ocorrencia setDataOcorrencia(LocalDate name) {
-        return null;
+    public Ocorrencia setDataOcorrencia(LocalDate data) {
+        this.dataOcorrencia = data;
+        return this;
     }
 
     @Override
@@ -94,7 +108,7 @@ public class Ocorrencia implements IOcorrencia {
     }
 
     @Override
-    public Local getLocalOcorrencia() {
+    public Local getLocal() {
         return localOcorrencia;
     }
 
@@ -110,6 +124,17 @@ public class Ocorrencia implements IOcorrencia {
     }
 
     @Override
+    public User getDenunciante() {
+        return denunciante;
+    }
+
+    @Override
+    public <U extends IUserSimple> IOcorrencia setDenunciante(U denunciante) {
+        this.denunciante = denunciante.toUserSimple(User.class);
+        return this;
+    }
+
+    @Override
     public <L extends ILocal> Ocorrencia setLocalDaOcorrencia(L local) {
         this.localDaOcorrencia = local.toLocal(Local.class);
         return this;
@@ -121,14 +146,25 @@ public class Ocorrencia implements IOcorrencia {
     }
 
     @Override
-    public <V extends IVeiculo> Ocorrencia setVeiculoOcorrencia(V veiculo) {
-        this.veiculoOcorrencia = veiculo.toVeiculo(Veiculo.class);
+    public <V extends IVeiculo> Ocorrencia addVeiculosOcorrencia(V veiculo) {
+        this.veiculos.add(veiculo.toVeiculo(Veiculo.class));
         return this;
     }
 
     @Override
-    public Veiculo getVeiculoOcorrencia() {
-        return veiculoOcorrencia;
+    public Set<Veiculo> getVeiculosOcorrencia() {
+        return veiculos;
+    }
+
+    @Override
+    public Ocorrencia setArtigo(IArtigo artigo) {
+        this.artigo = artigo.toArtigo(Artigo.class);
+        return this;
+    }
+
+    @Override
+    public Artigo getArtigo() {
+        return artigo;
     }
 
     @Override
