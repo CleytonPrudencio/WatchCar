@@ -1,48 +1,34 @@
-package com.system.watchCar.entity;
+package com.system.watchCar.dto.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.system.watchCar.interfaces.ILocal;
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "TB_LOCAL")
-public class Local implements ILocal {
+public class LocalRequest implements ILocal {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "localizacao_seq")
-    @SequenceGenerator(name = "localizacao_seq", sequenceName = "ISEQ$$_76242", allocationSize = 1)
     private Long idLocal;
-
-    @Column(length = 255)
     private String logradouro;
-
-    @Column(length = 255)
     private String bairro;
-
-    @Column(length = 255)
     private String cidade;
-
-    @Column(length = 255)
     private String estado;
-
-    @Column(length = 255)
     private String cep;
 
-    public Local() {
+    public LocalRequest() {
     }
 
     @Override
-    public Local setIdLocal(Long id) {
+    public LocalRequest setIdLocal(Long id) {
         this.idLocal = id;
         return this;
     }
 
+    @JsonProperty("id")
     @Override
     public Long getIdLocal() {
         return idLocal;
     }
 
     @Override
-    public Local setLogradouro(String logradouro) {
+    public LocalRequest setLogradouro(String logradouro) {
         this.logradouro = logradouro;
         return this;
     }
@@ -53,7 +39,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setBairro(String bairro) {
+    public LocalRequest setBairro(String bairro) {
         this.bairro = bairro;
         return this;
     }
@@ -64,7 +50,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setCidade(String cidade) {
+    public LocalRequest setCidade(String cidade) {
         this.cidade = cidade;
         return this;
     }
@@ -75,7 +61,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setEstado(String estado) {
+    public LocalRequest setEstado(String estado) {
         this.estado = estado;
         return this;
     }
@@ -86,7 +72,7 @@ public class Local implements ILocal {
     }
 
     @Override
-    public Local setCep(String cep) {
+    public LocalRequest setCep(String cep) {
         this.cep = cep;
         return this;
     }
