@@ -1,9 +1,8 @@
 package com.system.watchCar.dto.requests;
 
-import com.system.watchCar.entity.Artigo;
-import com.system.watchCar.entity.Ocorrencia;
-import com.system.watchCar.entity.OcorrenciaTipo;
-import com.system.watchCar.enums.OcorrenciaStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,12 @@ import java.util.List;
 @Data
 public class DenunciaRequest {
 
+    @Schema(description = "Data da criação da ocorrência", required = true, example = "2025-06-01")
+    @NotBlank(message = "Data inválida, informe uma data válida")
     private LocalDate data;
+
+    @Schema(description = "Descrição da denúncia", required = true, example = "Denúncia de furto de veículo")
+    @NotBlank(message = "Descrição faça um descrição da denúncia")
     private String descricao;
     private LocalDateTime dataHora;
     private LocalRequest local;
@@ -26,7 +30,12 @@ public class DenunciaRequest {
     private UserRequest denunciante;
     private LocalRequest localOcorrencia;
     private List<VeiculoRequest> veiculos = new ArrayList<>();
+
+    @Schema(description = "ID do artigo relacionado à denúncia", required = true, example = "1")
     private Long idArtigo;
+
+    @Schema(description = "ID do tipo de denúncia", required = true, example = "1")
+    @NotEmpty(message = "Tipo de denúncia inválido, informe um tipo válido")
     private Long tipo;
 }
 
