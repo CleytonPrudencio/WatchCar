@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class UserRequest implements IGestorSecurity {
+public class UserGestorRequest implements IGestorSecurity {
 
     private Long idUser;
     @NotBlank
@@ -36,7 +36,7 @@ public class UserRequest implements IGestorSecurity {
     private Boolean activated = true;
 
     @Override
-    public UserRequest setIdUser(Long id) {
+    public UserGestorRequest setIdUser(Long id) {
         this.idUser = id;
         return this;
     }
@@ -48,7 +48,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setUserName(String username) {
+    public UserGestorRequest setUserName(String username) {
         this.userName = username;
         return this;
     }
@@ -59,7 +59,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setPassword(String password) {
+    public UserGestorRequest setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -70,7 +70,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setCpf(String cpf) {
+    public UserGestorRequest setCpf(String cpf) {
         this.cpf = cpf;
         return this;
     }
@@ -81,7 +81,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setEmail(String email) {
+    public UserGestorRequest setEmail(String email) {
         this.email = email;
         return this;
     }
@@ -92,7 +92,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setUserActivated(boolean active) {
+    public UserGestorRequest setUserActivated(boolean active) {
         this.activated = active;
         return this;
     }
@@ -103,7 +103,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest addRole(IRole role) {
+    public UserGestorRequest addRole(IRole role) {
         roles.add(role.toRole(RoleDTO.class));
         return this;
     }
@@ -146,7 +146,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setDepartment(String department) {
+    public UserGestorRequest setDepartment(String department) {
         this.department = department;
         return this;
     }
@@ -157,7 +157,7 @@ public class UserRequest implements IGestorSecurity {
     }
 
     @Override
-    public UserRequest setCargo(String cargo) {
+    public UserGestorRequest setCargo(String cargo) {
         this.cargo = cargo;
         return this;
     }
