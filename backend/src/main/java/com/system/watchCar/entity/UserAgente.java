@@ -6,7 +6,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "TB_USER_AGENTE")
-public class UserAgente extends UserSimple implements IAgente {
+public class UserAgente extends User implements IAgente {
 
     private String delegate;
     private String badge;

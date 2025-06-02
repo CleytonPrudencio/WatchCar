@@ -1,6 +1,7 @@
 package com.system.watchCar.controller;
 
 import com.system.watchCar.dto.*;
+import com.system.watchCar.dto.requests.UserRequest;
 import com.system.watchCar.entity.Ocorrencia;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.service.OcorrenciaService;
@@ -90,15 +91,15 @@ public class OcorrenciaController {
 
     @PutMapping("/{id}/assumir")
     public ResponseEntity<String> assumirResponsavel(
-            @PathVariable Long id, @RequestBody UsuarioRequest usuarioRequest) {
-        ocorrenciaService.assumirResponsavel(id, String.valueOf(usuarioRequest.getUsuarioId()));
+            @PathVariable Long id, @RequestBody UserRequest userRequest) {
+        ocorrenciaService.assumirResponsavel(id, String.valueOf(userRequest.getIdUser()));
         return ResponseEntity.ok("Responsabilidade assumida com sucesso");
     }
 
     @PutMapping("/{id}/desassumir")
     public ResponseEntity<String> desassumirResponsavel(
-            @PathVariable Long id, @RequestBody UsuarioRequest usuarioRequest) {
-        ocorrenciaService.desassumirResponsavel(id, String.valueOf(usuarioRequest.getUsuarioId()));
+            @PathVariable Long id, @RequestBody UserRequest userRequest) {
+        ocorrenciaService.desassumirResponsavel(id, String.valueOf(userRequest.getIdUser()));
         return ResponseEntity.ok("Responsabilidade desassumida com sucesso");
     }
 

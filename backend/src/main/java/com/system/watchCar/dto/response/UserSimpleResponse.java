@@ -1,88 +1,72 @@
-package com.system.watchCar.dto;
+package com.system.watchCar.dto.response;
 
-import com.system.watchCar.entity.Role;
-import com.system.watchCar.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.system.watchCar.dto.RoleDTO;
+import com.system.watchCar.interfaces.IResponseOK;
 import com.system.watchCar.interfaces.IRole;
 import com.system.watchCar.interfaces.IUserSimple;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserDTO implements IUserSimple {
+public class UserSimpleResponse implements IUserSimple, IResponseOK {
 
     private Long idUser;
     private String name;
-    private String password;
     private String email;
-    private String cpf;
-    private Boolean ativo;
     private List<RoleDTO> roles = new ArrayList<>();
 
-
-    public UserDTO(User entity) {
-        this.idUser = entity.getIdUser();
-        this.name = entity.getUserName();
-        this.password = entity.getPassword();
-        this.email = entity.getEmail();
-        this.cpf = entity.getCpf();
-
-        if (entity.getRoles() != null) {
-            for (Role role : entity.getRoles()) {
-                roles.add(new RoleDTO(role.getIdRole(), role.getAuthority()));
-            }
-        }
+    public UserSimpleResponse() {
     }
 
     @Override
-    public UserDTO setIdUser(Long id) {
+    public UserSimpleResponse setIdUser(Long id) {
         this.idUser = id;
         return this;
     }
 
+    @JsonProperty("id")
     @Override
     public Long getIdUser() {
         return idUser;
     }
 
     @Override
-    public UserDTO setUserName(String username) {
+    public UserSimpleResponse setUserName(String username) {
         this.name = username;
         return this;
     }
 
+    @JsonProperty("name")
     @Override
     public String getUserName() {
         return name;
     }
 
+    @JsonIgnore
     @Override
-    public UserDTO setPassword(String password) {
-        this.password = password;
+    public UserSimpleResponse setPassword(String password) {
         return this;
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return null;
     }
 
     @Override
     public IUserSimple setCpf(String cpf) {
-        this.cpf = cpf;
         return this;
     }
 
     @Override
     public String getCpf() {
-        return cpf;
+        return null;
     }
 
     @Override
-    public UserDTO setEmail(String email) {
+    public UserSimpleResponse setEmail(String email) {
         this.email = email;
         return this;
     }
@@ -93,24 +77,30 @@ public class UserDTO implements IUserSimple {
     }
 
     @Override
-    public UserDTO setUserActivated(boolean active) {
-        this.ativo = active;
+    public UserSimpleResponse setUserActivated(boolean active) {
         return this;
     }
 
+    @JsonProperty("ativo")
     @Override
     public Boolean getUserActivated() {
-        return ativo;
+        return null;
     }
 
     @Override
-    public UserDTO addRole(IRole role) {
+    public UserSimpleResponse addRole(IRole role) {
         roles.add(role.toRole(RoleDTO.class));
         return this;
     }
 
+    @JsonProperty("tipo")
     @Override
     public List<RoleDTO> getRoles() {
         return roles;
+    }
+
+    @Override
+    public boolean getSuccess() {
+        return (!email.isBlank());
     }
 }

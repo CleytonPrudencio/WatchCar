@@ -1,42 +1,170 @@
 package com.system.watchCar.entity;
 
+import com.system.watchCar.interfaces.IRole;
+import com.system.watchCar.interfaces.IUserSimple;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-
-@AllArgsConstructor
 @Entity
 @Table(name = "TB_USER")
-public class User extends UserSimple {
+@Inheritance(strategy = InheritanceType.JOINED)
+public class User implements IUserSimple, UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idUser;
 
-    @OneToMany(mappedBy = "user")
-    private List<Veiculo> carros = new ArrayList<>();
+    @NotBlank
+    @Column(nullable = false)
+    private String userName;
 
-    @OneToOne
-    private Local local;
+    @NotBlank
+    @Column(nullable = false)
+    private String password;
 
-    public User() {}
+    @Email
+    @Column(unique = true)
+    private String email;
 
-    public User(Local local) {
-        this.local = local;
+    // Adicionando os campos CPF e ALERTA
+    @Column(unique = true, length = 11)
+    private String cpf;
+
+    private Boolean activated;
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_user_role",
+            joinColumns = @JoinColumn(name = "user_userId"),
+            inverseJoinColumns = @JoinColumn(name = "role_roleId"))
+    private Set<Role> roles = new HashSet<>();
+
+    public User() {
     }
 
-    public List<Veiculo> getCarros() {
-        return carros;
+    @Override
+    public User setIdUser(Long id) {
+        this.idUser = id;
+        return this;
     }
 
-    public void setCarros(List<Veiculo> carros) {
-        this.carros = carros;
+    @Override
+    public Long getIdUser() {
+        return idUser;
     }
 
-    public Local getLocal() {
-        return local;
+    @Override
+    public User setUserName(String username) {
+        this.userName = username;
+        return this;
     }
 
-    public void setLocal(Local local) {
-        this.local = local;
+    @Override
+    public String getUserName() {
+        return userName;
+    }
+
+    @Override
+    public User setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public User setCpf(String cpf) {
+        this.cpf = cpf;
+        return this;
+    }
+
+    @Override
+    public String getCpf() {
+        return cpf;
+    }
+
+    @Override
+    public User setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    @Override
+    public User setUserActivated(boolean active) {
+        this.activated = active;
+        return this;
+    }
+
+    @Override
+    public Boolean getUserActivated() {
+        return activated;
+    }
+
+    @Override
+    public User addRole(IRole role) {
+        roles.add(role.toRole(Role.class));
+        return this;
+    }
+
+    public User addRole(Role role) {
+        this.roles.add(role);
+        return this;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
+    }
+
+    public boolean hasRole(String roleName) {
+        for (Role role : roles) {
+            if (role.getAuthority().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
