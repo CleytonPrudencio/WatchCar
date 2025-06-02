@@ -27,3 +27,8 @@ INSERT INTO TB_TIPO_OCORRENCIA (NAME_TIPO_OCORRENCIA, DESCRICAO_TIPO_OCORRENCIA)
 INSERT INTO TB_TIPO_OCORRENCIA (NAME_TIPO_OCORRENCIA, DESCRICAO_TIPO_OCORRENCIA) VALUES ('Calúnia, injúria e difamação ', 'Crimes contra a honra, especialmente quando praticados em redes sociais ou outros meios digitais.');
 INSERT INTO TB_TIPO_OCORRENCIA (NAME_TIPO_OCORRENCIA, DESCRICAO_TIPO_OCORRENCIA) VALUES ('Ameaça', 'Dependendo da gravidade e do contexto, algumas ameaças que não envolvam risco iminente podem ser registradas online. No entanto, ameaças mais sérias ou contínuas geralmente demandam comparecimento à delegacia.');
 INSERT INTO TB_TIPO_OCORRENCIA (NAME_TIPO_OCORRENCIA, DESCRICAO_TIPO_OCORRENCIA) VALUES ('Acidentes de trânsito sem vítimas', 'Colisões leves em que houve apenas danos materiais e não há feridos.');
+
+INSERT INTO tb_user (activated, cpf, email, password, user_name) VALUES (true, '11122233301', 'welder@gmail.com', '$2a$10$lMgYQtaN7x6fgTXPPgoP7.R6jE3twRMd8ClfJT4DkOYNCnNA3Y9N.', 'Welder Barbosa Paz')
+INSERT INTO TB_USER_ROLE (user_id, role_id) VALUES (1, 6)
+INSERT INTO TB_USER_AGENTE (USER_ID, BADGE, DELEGATE, RA) VALUES (1, 'BADGE', '73ª', 'B13')
+INSERT INTO TB_USER_GESTOR (USER_ID, CARGO, DEPARTMENT) VALUES (1, 'Delegado', 'Administração')
