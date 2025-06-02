@@ -3,9 +3,7 @@ package com.system.watchCar.service;
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
-import com.system.watchCar.dto.requests.UserRequest;
 import com.system.watchCar.dto.response.UserSimpleResponse;
-import com.system.watchCar.entity.Role;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.entity.UserAgente;
 import com.system.watchCar.entity.UserGestor;
@@ -43,7 +41,10 @@ public class UserService implements UserDetailsService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    RoleRepository roleRepository;
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private RoleService roleService;
 
     @Transactional
     public UserSimpleResponse save(UserGestorRequest request) {
@@ -61,10 +62,8 @@ public class UserService implements UserDetailsService {
         }
 
         // Busca e adiciona os papéis ao usuário
-        for (RoleDTO roleDTO : request.getRoles()) {
-            Role role = roleRepository.findById(roleDTO.getIdRole())
-                    .orElseThrow(() -> new UserExecption("No role found with id: " + roleDTO.getIdRole()));
-            user.addRole(role);
+        for (RoleDTO role : request.getRoles()) {
+            user.addRole(roleService.findById(role.getIdRole()));
         }
 
         // Verifica se o usuário é um Agente
@@ -84,8 +83,9 @@ public class UserService implements UserDetailsService {
             gestor.setDepartment(request.getDepartment());
         }
 
+        UserExecption.validationWithPassword(user);
         if (Objects.nonNull(gestor)) {
-            return userGestorRepository.save(agente).toUserSimple(UserSimpleResponse.class);
+            return userGestorRepository.save(gestor).toUserSimple(UserSimpleResponse.class);
         } else if (Objects.nonNull(agente)) {
             return userAgenteRepository.save(agente).toUserSimple(UserSimpleResponse.class);
         } else {
