@@ -1,6 +1,7 @@
 package com.system.watchCar.dto.exceptions;
 
 import com.system.watchCar.interfaces.IResponseOK;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 
@@ -12,6 +13,8 @@ public class ErrorDTO implements IResponseOK {
     protected String messege;
     protected String path;
     protected String method;
+
+    @Schema(description = "Indicates whether the operation was successful or not", example = "false")
     protected boolean success = false;
 
     public ErrorDTO(HttpStatus status, Exception exception, HttpServletRequest request) {

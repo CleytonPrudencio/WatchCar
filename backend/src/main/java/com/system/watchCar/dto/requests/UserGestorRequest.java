@@ -5,6 +5,7 @@ import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.interfaces.IAgente;
 import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.interfaces.IRole;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.br.CPF;
@@ -15,24 +16,41 @@ import java.util.List;
 
 public class UserGestorRequest implements IGestorSecurity {
 
+    @Schema(description = "ID do usuário", example = "1")
     private Long idUser;
+
+    @Schema(description = "Digite o nome do usuário", required = true, example = "João da Silva")
     @NotBlank
     private String userName;
+
+    @Schema(description = "Digite a senha do usuário", required = true, example = "123")
     @NotBlank
     private String password;
-    @Email
+
+    @Schema(description = "Digite o email do usuário", required = true, example = "meu@mail.com")
+    @Email(message = "E-mail inválido")
     private String email;
-    @CPF
+
+    @Schema(description = "Digite o CPF do usuário", required = true, example = "12345678901")
+    @CPF(message = "CPF inválido")
     private String cpf;
+
+    @Schema(description = "Lista de papéis do usuário", example = "[{\"idRole\": 1}]")
     private List<RoleDTO> roles = new ArrayList<>();
 
+    @Schema(description = "Nome da delegacia", example = "73º DP")
     private String delegate;
+
+    @Schema(description = "Número do crachá", example = "123456")
     private String badge;
+
+    @Schema(description = "Número do RA", example = "1234")
     private String ra;
 
     private String department;
     private String cargo;
 
+    @Schema(description = "Indica se o usuário está ativo", example = "true")
     private Boolean activated = true;
 
     @Override
