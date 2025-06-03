@@ -1,9 +1,9 @@
 import type { ErrorType } from '@/types/erros-type'
+import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
 
 export const validations = (props: any, error: ErrorType): boolean => {
   for (const [key, val] of Object.entries(props)) {
     const value = val as string
-    console.log('key: ', key, ' value: ', value)
     switch (key) {
       case 'name':
         if (!validationName(value)) {
@@ -72,7 +72,7 @@ export const validations = (props: any, error: ErrorType): boolean => {
 
 // Função para validar NOME
 export const validationName = (name: string): boolean => {
-  if (name == null || name.length < 5) {
+  if (name === null || name === undefined || name.length < 5) {
     return false
   }
   return true
@@ -87,6 +87,7 @@ export function formatCPF(value: string): string {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 export function isValidCPF(cpf: string): boolean {
+  if( cpf === null || cpf === undefined || cpf.length < 10) return false;
   cpf = cpf.replace(/[^\d]+/g, '')
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
 
@@ -111,7 +112,7 @@ export const validaEmail = (email: string): boolean => {
 
 // Função para validar SENHA
 export const validaPassword = (passsword: string, confirmPassword: string): boolean => {
-  if (passsword !== confirmPassword) {
+  if (passsword === undefined || confirmPassword === undefined || passsword !== confirmPassword) {
     return false
   }
   return true
@@ -121,5 +122,9 @@ const isNullOrEmpty = (value: string): boolean => {
   return value === null || value.trim() === '' || value === undefined
 }
 const isTextSize = (value: string, length: number): boolean => {
-  return value.length < length
+  return value.length == length
+}
+
+export const replaceNumbers = (value: string): string => {
+  return value.replace(/\D/g, '')
 }
