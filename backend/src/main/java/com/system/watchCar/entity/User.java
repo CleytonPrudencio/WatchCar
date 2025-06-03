@@ -140,7 +140,7 @@ public class User implements IUserSimple, UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return cpf;
     }
 
     @Override
