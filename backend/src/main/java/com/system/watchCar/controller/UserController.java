@@ -6,6 +6,7 @@ import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.response.UserSimpleResponse;
 import com.system.watchCar.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ public class UserController implements UserOpenApi {
     private UserService service;
 
     @PostMapping(value = "/register")
-    public ResponseEntity<UserSimpleResponse> register(@RequestBody UserGestorRequest request) {
+    public ResponseEntity<UserSimpleResponse> register(@Valid @RequestBody UserGestorRequest request) {
         UserSimpleResponse createdUser = service.save(request);
         return ResponseEntity.ok(createdUser);
     }
