@@ -79,7 +79,7 @@ public class UserService implements UserDetailsService {
         // Verifica se o usuário é um Gestor de Segurança
         UserGestor gestor = null;
         if (Objects.nonNull(agente) && Objects.nonNull(request.getCargo())) {
-            gestor = agente.toUserSimple(UserGestor.class);
+            gestor = agente.toAgente(UserGestor.class);
             gestor.setCargo(request.getCargo());
             gestor.setDepartment(request.getDepartment());
         }
