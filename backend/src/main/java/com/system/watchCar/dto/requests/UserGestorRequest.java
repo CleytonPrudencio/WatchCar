@@ -16,11 +16,12 @@ import java.util.List;
 
 public class UserGestorRequest implements IGestorSecurity {
 
-    @Schema(description = "ID do usuário", example = "1")
+    @Schema(name = "id", description = "ID do usuário", example = "1")
     private Long idUser;
 
     @Schema(description = "Digite o nome do usuário", required = true, example = "João da Silva")
-    @NotBlank
+    @NotBlank(message = "Campo nome do usuário obrigatório")
+    @JsonProperty("name")
     private String userName;
 
     @Schema(description = "Digite a senha do usuário", required = true, example = "123")
@@ -39,18 +40,25 @@ public class UserGestorRequest implements IGestorSecurity {
     private List<RoleDTO> roles = new ArrayList<>();
 
     @Schema(description = "Nome da delegacia", example = "73º DP")
+    @JsonProperty("delegacia")
     private String delegate;
 
     @Schema(description = "Número do crachá", example = "123456")
+    @JsonProperty("distintivo")
     private String badge;
 
     @Schema(description = "Número do RA", example = "1234")
     private String ra;
 
+    @Schema(description = "Departamento do usuário", example = "Polícia Civil")
+    @JsonProperty("departamento")
     private String department;
+
+    @Schema(description = "Cargo do usuário", example = "Delegado")
     private String cargo;
 
     @Schema(description = "Indica se o usuário está ativo", example = "true")
+    @JsonProperty("ativo")
     private Boolean activated = true;
 
     @Override
@@ -59,7 +67,6 @@ public class UserGestorRequest implements IGestorSecurity {
         return this;
     }
 
-    @JsonProperty("id")
     @Override
     public Long getIdUser() {
         return idUser;
@@ -133,6 +140,7 @@ public class UserGestorRequest implements IGestorSecurity {
 
     @Override
     public IAgente setDelegate(String delegate) {
+        this.delegate = delegate;
         return this;
     }
 
