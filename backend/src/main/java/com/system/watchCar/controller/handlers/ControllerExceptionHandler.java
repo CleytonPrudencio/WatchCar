@@ -6,6 +6,7 @@ import com.system.watchCar.dto.exceptions.ErrorsDTO;
 import com.system.watchCar.service.exceptions.LocalException;
 import com.system.watchCar.service.exceptions.UserExecption;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -35,6 +36,12 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(LocalException.class)
     public ResponseEntity<ErrorDTO> localException(LocalException error, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(new ErrorDTO(status, error, request));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorDTO> dataIntegrityViolationException(DataIntegrityViolationException error, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
         return ResponseEntity.status(status).body(new ErrorDTO(status, error, request));
     }
 

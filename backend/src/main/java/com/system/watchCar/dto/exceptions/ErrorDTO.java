@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 
+import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Objects;
 
 public class ErrorDTO implements IResponseOK {
     private final Instant timestamp = Instant.now();
     protected int status;
-    protected String messege;
+    protected String message;
     protected String path;
     protected String method;
 
@@ -21,7 +23,17 @@ public class ErrorDTO implements IResponseOK {
         this.status = status.value();
         this.path = request.getRequestURI();
         this.method = request.getMethod();
-        this.messege = exception.getMessage();
+
+        Throwable cause = exception.getCause();
+        while (cause != null) {
+            if (cause instanceof SQLException sqlEx) {
+                message = sqlEx.getMessage();
+                break;
+            }
+        }
+        if (Objects.isNull(message) || message.isBlank()) {
+            message = exception.getMessage();
+        }
     }
 
     public Instant getTimestamp() {
@@ -32,8 +44,8 @@ public class ErrorDTO implements IResponseOK {
         return status;
     }
 
-    public String getMessege() {
-        return messege;
+    public String getMessage() {
+        return message;
     }
 
     public String getPath() {
