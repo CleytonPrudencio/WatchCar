@@ -1,9 +1,8 @@
 import type { ErrorType } from '@/types/erros-type'
-import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
 
 export const validations = (props: any, error: ErrorType): boolean => {
   for (const [key, val] of Object.entries(props)) {
-    const value = val as string
+    const value = props[key]
     switch (key) {
       case 'name':
         if (!validationName(value)) {
@@ -24,9 +23,12 @@ export const validations = (props: any, error: ErrorType): boolean => {
         }
         break
       case 'password':
+        console.log('Validating password:', value.length < 6)
         if (value.length < 6) {
           error.name = 'password'
           error.message = 'Password must be at least 6 characters long'
+        }else{
+          error.name = '';
         }
         break
       case 'delegacia':
@@ -63,6 +65,8 @@ export const validations = (props: any, error: ErrorType): boolean => {
         error.name = ''
         error.message = ''
     }
+    console.log(' key:', key, ' | value:', value, ' | error:', error.name, ' | message:', error.message)
+
     if (error.name.length > 0) {
       break
     }
