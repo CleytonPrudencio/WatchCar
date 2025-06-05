@@ -105,6 +105,9 @@ const handleLogin = async (event) => {
   await authService
     .loginRequest({ username: replaceNumbers(formData.cpf), password: formData.password })
     .then((response) => {
+
+      console.log('Login response:', response)
+
       authService.saveAccessToken(response.data.access_token)
       toast.success('Login realizado com sucesso!')
       window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
