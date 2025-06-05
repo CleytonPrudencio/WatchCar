@@ -2,41 +2,66 @@
   section.container
     div.register-container
       h2 Cadastro
-      form(@submit.prevent="handleRegister")
-    
+      form(@submit.prevent="handleRegister" id="register-user-form")
+
         div.input-group
           label Tipo de Usuário
           div.radio-buttons
             label(for="publico")
-              input(type="radio" id="publico" :value="1" v-model="userType")
+              input(type="radio" id="publico" name="publico" :value="1" v-model="role.idRole")
               | Cidadao
             label(for="policial")
-              input(type="radio" id="policial" :value="2" v-model="userType")
+              input(type="radio" id="policial" name="policial" :value="2" v-model="role.idRole")
               | Policial
             label(for="AgenteDeSeguranca")
-              input(type="radio" id="publico" :value="3" v-model="userType")
+              input(type="radio" id="AgenteDeSeguranca" :value="3" v-model="role.idRole")
               | Agente de Seguranca
             label(for="investigador")
-              input(type="radio" id="publico" :value="4" v-model="userType")
+              input(type="radio" id="investigador" :value="4" v-model="role.idRole")
               | Investigador
             label(for="gestorDeSegurancaPublica")
-              input(type="radio" id="publico" :value="5" v-model="userType")
+              input(type="radio" id="gestorDeSegurancaPublica" :value="5" v-model="role.idRole")
               | Gestor de Seguranca Publica
 
         div.input-group
           label(for="name") Nome Completo
-          input(type="text" id="name" v-model="name" required)
-          span.error-message(v-if="nameError") {{ nameError }}
+          input(type="text" id="name" name="name" v-model="formData.name" @input="validateInputs" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='name'") {{error.message}}
 
         div.input-group
           label(for="cpf") CPF
-          input(type="text" id="cpf" v-model="cpf" maxlength="14" required)
-          span.error-message(v-if="cpfError") {{ cpfError }}
+          input(type="text" id="cpf" name="cpf" v-model="formData.cpf" @input="validateInputs" @blur="validations(formData, error)" maxlength="14" required)
+          span.error-message(v-if="error.name==='cpf'") {{error.message}}
 
         div.input-group
           label(for="registerEmail") E-mail
-          input(type="email" id="registerEmail" v-model="email" required)
-          span.error-message(v-if="emailError") {{ emailError }}
+          input(type="email" id="registerEmail" name="email" v-model="formData.email" @input="validateInputs" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='email'") {{error.message}}
+
+        div.input-group(v-if="isPolicialOuSimilar")
+          label(for="delegacia") Delegacia
+          input(type="text" id="delegacia" name="delegacia" v-model="formData.delegacia" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='delegacia'") {{error.message}}
+
+        div.input-group(v-if="isPolicialOuSimilar")
+          label(for="badge") Distintivo
+          input(type="text" id="badge" name="distintivo" v-model="formData.distintivo" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='distintivo'") {{error.message}}
+
+        div.input-group(v-if="isPolicialOuSimilar")
+          label(for="ra") RA (Registro de Atividade)
+          input(type="text" id="ra" name="ra" v-model="formData.ra" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='ra'") {{error.message}}
+
+        div.input-group(v-if="isGestor")
+          label(for="departamento") Departamento
+          input(type="text" id="departamento" name="departamento" v-model="formData.departamento" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='departamento'") {{error.message}}
+
+        div.input-group(v-if="isGestor")
+          label(for="cargo") Cargo
+          input(type="text" id="cargo" name="cargo" v-model="formData.cargo" @blur="validations(formData, error)" required)
+          span.error-message(v-if="error.name==='cargo'") {{error.message}}
 
         div.input-group.password-group
           label(for="registerPassword") Senha
@@ -44,11 +69,14 @@
             input(
               :type="showRegisterPassword ? 'text' : 'password'"
               id="registerPassword"
-              v-model="password"
+              name="password"
+              @input="validateInputs"
+              @blur="validations(formData, error)"
               required
             )
             span.toggle-icon(@click="showRegisterPassword = !showRegisterPassword")
               i(:class="showRegisterPassword ? 'fas fa-eye-slash' : 'fas fa-eye'")
+            span.error-message(v-if="error.name==='password'") {{error.message}}
 
         div.input-group.password-group
           label(for="confirmPassword") Confirmar Senha
@@ -56,215 +84,96 @@
             input(
               :type="showConfirmPassword ? 'text' : 'password'"
               id="confirmPassword"
+              name="confirmPassword"
               v-model="confirmPassword"
+              @input="validations(formData, error)"
               required
             )
             span.toggle-icon(@click="showConfirmPassword = !showConfirmPassword")
               i(:class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'")
+            span.error-message(v-if="error.name==='confirmPassword'") {{error.message}}
 
-        // Exibe a mensagem de erro se as senhas não coincidirem
-        span.error-message(v-if="confirmPasswordError") {{ confirmPasswordError }}
-
-        div.input-group(v-if="isPolicialOuSimilar")
-          label(for="delegate") Delegacia
-          input(type="text" id="delegate" v-model="delegate" required)
-          span.error-message(v-if="delegateError") {{ delegateError }}
-
-        div.input-group(v-if="isPolicialOuSimilar")
-          label(for="badge") Distintivo
-          input(type="text" id="badge" v-model="badge" required)
-          span.error-message(v-if="badgeError") {{ badgeError }}
-
-        div.input-group(v-if="isPolicialOuSimilar")
-          label(for="ra") RA (Registro de Atividade)
-          input(type="text" id="ra" v-model="ra" required)
-          span.error-message(v-if="raError") {{ raError }}
-
-        div.input-group(v-if="isGestor")
-          label(for="departamento") Departamento
-          input(type="text" id="departamento" v-model="departamento" required)
-          span.error-message(v-if="departamentoError") {{ departamentoError }}
-
-        div.input-group(v-if="isGestor")
-          label(for="cargo") Cargo
-          input(type="text" id="cargo" v-model="cargo" required)
-          span.error-message(v-if="cargoError") {{ cargoError }}
-  
 
         button(
           type="submit"
-          :disabled="!isFormValid") Criar Conta
+          ) Criar Conta
 
       RouterLink.center-link(to="/login") Já tem conta? Faça Login
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { register as registerApi } from '@/services/authService'
 import { toast } from 'vue3-toastify'
+import type { RoleProps } from '@/types/role-type'
+import type { UsuarioGestorProps } from '@/types/user-type'
+import { computed, reactive, ref } from 'vue'
+import { formatCPF, validations, validaPassword,replaceNumbers } from '../utils/form'
 import { useLoadingStore } from '@/stores/loadingStore'
+import api from '../services/api'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+
 const store = useLoadingStore()
 const router = useRouter()
 
-// Dados do formulário
-const name = ref('')
-const cpf = ref('')
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const userType = ref(1) // 1 = Público, 2 = Policial
-const delegate = ref('')
-const badge = ref('')
-const ra = ref('')
-const showRegisterPassword = ref(false)
-const showConfirmPassword = ref(false)
-const isPolicialOuSimilar = computed(() => [2, 3, 4].includes(userType.value))
-const isGestor = computed(() => userType.value === 5)
-
 // Erros
-const nameError = ref('')
-const cpfError = ref('')
-const emailError = ref('')
-const confirmPasswordError = ref('')
-const delegateError = ref('')
-const badgeError = ref('')
-const raError = ref('')
-const departamento = ref('')
-const cargo = ref('')
-const departamentoError = ref('')
-const cargoError = ref('')
+const error = ref({ name: '', message: '' })
 
-// Computed property para verificar se é Policial
-const isPolicial = computed(() => userType.value === 2)
+const role = reactive<RoleProps>({ idRole: 1 } as RoleProps)
+const formData = reactive<UsuarioGestorProps>({ roles: [role] } as UsuarioGestorProps)
 
-// Computed property para verificar se o formulário está válido
-const isFormValid = computed(() => {
-  const camposBasicosValidos =
-    !nameError.value &&
-    !cpfError.value &&
-    !emailError.value &&
-    !confirmPasswordError.value &&
-    name.value &&
-    cpf.value &&
-    email.value &&
-    password.value &&
-    confirmPassword.value &&
-    password.value === confirmPassword.value
+// Passowrd visibility
+const showRegisterPassword = ref(false)
+const confirmPassword = ref('')
+const showConfirmPassword = ref(false)
+const isPolicialOuSimilar = computed(() => [2, 3, 4].includes(Number(role.idRole)))
+const isGestor = computed(() => Number(role.idRole) === 5)
 
-  if (isPolicialOuSimilar.value) {
-    return (
-      camposBasicosValidos &&
-      !delegateError.value &&
-      !badgeError.value &&
-      !raError.value &&
-      delegate.value &&
-      badge.value &&
-      ra.value
-    )
+const validateInputs = (event) => {
+  var name = event.target.name
+  var value = event.target.value
+  formData[name] = value
+
+  // Criando a formatação do CPF
+  if (name === 'cpf') {
+    formData.cpf = formatCPF(value)
   }
-
-  if (isGestor.value) {
-    return (
-      camposBasicosValidos &&
-      !departamentoError.value &&
-      !cargoError.value &&
-      departamento.value &&
-      cargo.value
-    )
-  }
-
-  return camposBasicosValidos
-})
-
-// Watchers para validar CPF, Email, e Senhas
-watch(cpf, (val) => {
-  cpf.value = formatCPF(val)
-  cpfError.value = !isValidCPF(val) ? 'CPF inválido' : ''
-})
-
-watch(email, (val) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  emailError.value = !emailRegex.test(val) ? 'E-mail inválido' : ''
-})
-
-watch([password, confirmPassword], ([pass, confirm]) => {
-  confirmPasswordError.value = confirm && confirm !== pass ? 'Senhas não coincidem' : ''
-})
-
-// Função para formatar CPF
-function formatCPF(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
-// Função para validar CPF
-function isValidCPF(cpf: string): boolean {
-  cpf = cpf.replace(/[^\d]+/g, '')
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
-
-  let sum = 0
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i)
-  let rev = 11 - (sum % 11)
-  if (rev === 10 || rev === 11) rev = 0
-  if (rev !== parseInt(cpf.charAt(9))) return false
-
-  sum = 0
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i)
-  rev = 11 - (sum % 11)
-  if (rev === 10 || rev === 11) rev = 0
-  return rev === parseInt(cpf.charAt(10))
-}
-
-// Função de registro
-const handleRegister = async () => {
-  if (!name.value || !cpf.value || !email.value || !password.value || !confirmPassword.value) {
-    toast.error('Por favor, preencha todos os campos obrigatórios.')
+const handleRegister = async (event) => {
+  event.preventDefault()
+  store.startLoading() // Inicia o loading
+  // Validações
+  if (!validations(formData, error.value)) {
+    store.stopLoading() // Para o loading quando a ação terminar
+    toast.error(error.value.message)
+    return
+  }
+  if (!validaPassword(String(confirmPassword.value), formData.password)) {
+    error.value = { name: 'confirmPassword', message: 'As senhas não conferem' }
+    store.stopLoading() // Para o loading quando a ação terminar
+    toast.error(error.value.message)
     return
   }
 
-  if (password.value !== confirmPassword.value) {
-    toast.error('As senhas não coincidem.')
-    return
-  }
+  formData.cpf = replaceNumbers(formData.cpf) // Formata o CPF antes de enviar
 
-  if (isPolicial.value && (!delegate.value || !badge.value || !ra.value)) {
-    toast.error('Preencha os campos adicionais para policial.')
-    return
-  }
-
-  if (isGestor.value && (!departamento.value || !cargo.value)) {
-    toast.error('Preencha os campos adicionais para Gestor de Segurança Pública.')
-    return
-  }
-
-  try {
-    store.startLoading() // Inicia o loading
-    const response = await registerApi(
-      name.value,
-      password.value,
-      email.value,
-      cpf.value.replace(/\D/g, ''), // Enviar CPF sem formatação
-      userType.value,
-      // Campos adicionais dependendo do tipo de usuário
-      isPolicialOuSimilar.value ? delegate.value : undefined,
-      isPolicialOuSimilar.value ? badge.value : undefined,
-      isPolicialOuSimilar.value ? ra.value : undefined,
-      isGestor.value ? departamento.value : undefined,
-      isGestor.value ? cargo.value : undefined,
-    )
-    if (response && response.success) {
+  await api
+    .post('/register', formData)
+    .then(() => {
       toast.success('Cadastro realizado com sucesso!')
       store.stopLoading() // Para o loading quando a ação terminar
-      await router.push('/login')
-    }
-  } catch (err) {
-    store.stopLoading() // Para o loading quando a ação terminar
-    toast.error('Erro ao cadastrar usuário.')
-  }
+      router.push('/login')
+    })
+    .catch((errors) => {
+      if (axios.isAxiosError(errors) && errors.response) {
+        toast.error(errors.response.data.message || 'Erro ao registrar usuário')
+      }else{
+        toast.error('Erro ao registrar usuário')
+      }
+    })
+    .finally(() => {
+      store.stopLoading() // Para o loading quando a ação terminar
+    })
 }
 </script>
 

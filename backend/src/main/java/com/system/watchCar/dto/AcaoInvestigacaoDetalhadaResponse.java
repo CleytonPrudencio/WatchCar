@@ -1,7 +1,6 @@
 package com.system.watchCar.dto;
 
 import com.system.watchCar.entity.Ocorrencia;
-import com.system.watchCar.entity.Responsavel;
 import com.system.watchCar.entity.User;
 import lombok.Data;
 

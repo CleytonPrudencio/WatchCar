@@ -1,10 +1,10 @@
 package com.system.watchCar.service;
 
-import com.monitorjbl.xlsx.StreamingReader;
 import com.system.watchCar.dto.ArquivoDTO;
-import com.system.watchCar.dto.DenunciaRequest;
+import com.system.watchCar.dto.requests.ArtigoRequest;
+import com.system.watchCar.dto.requests.DenunciaRequest;
 import com.system.watchCar.entity.Artigo;
-import com.system.watchCar.entity.Ocorrencia;
+import com.system.watchCar.enums.VeiculoType;
 import com.system.watchCar.repository.ArtigoRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -89,29 +88,25 @@ public class ArquivoService {
                     arquivos.add(dto);
                     var id = obterOuCriarArtigoPorRubrica(dto.getRubrica());
                     DenunciaRequest denunciaRequest = new DenunciaRequest();
-                    denunciaRequest.setIdUsuario(1L);
-                    denunciaRequest.setCep(dto.getCep());
-                    denunciaRequest.setBairro(dto.getBairro());
-                    denunciaRequest.setAno(parseInteger(dto.getAno_modelo()));
-                    denunciaRequest.setCidade(dto.getCidade());
-                    denunciaRequest.setLogradouro(dto.getLogradouro());
-                    denunciaRequest.setMarca(dto.getDescr_tipo_veiculo());
-                    denunciaRequest.setTipo(dto.getDescr_tipo_veiculo());
-                    denunciaRequest.setPlaca(dto.getPlaca_veiculo());
-                    denunciaRequest.setEstado("São Paulo");
-                    denunciaRequest.setStatusDenuncia("Em andamento");
-                    denunciaRequest.setHoraOcorrencia(
-                            dto.getHora_ocorrncia() != null ? dto.getHora_ocorrncia().toString() : ""
-                    );
-                    denunciaRequest.setDescricao(dto.getDescr_ocorrencia_veiculo());
-                    if (dto.getData_ocorrncia_bo() != null && dto.getHora_ocorrncia() != null) {
-                        denunciaRequest.setDataHora(LocalDateTime.of(dto.getData_ocorrncia_bo(), dto.getHora_ocorrncia()));
-                    } else {
-                        denunciaRequest.setDataHora(LocalDateTime.now()); // ou null, ou outro default
-                    }
-                    denunciaRequest.setCor(dto.getDesc_cor_veiculo());
-                    denunciaRequest.setArtigoLei(String.valueOf(id));
-                    denunciaRequest.setReceberAlertas(true);
+                    denunciaRequest.getDenunciante().setIdUser(1L);
+                    denunciaRequest.getLocal().setCep(dto.getCep());
+                    denunciaRequest.getLocal().setBairro(dto.getBairro());
+                    denunciaRequest.getLocal().setCidade(dto.getCidade());
+                    denunciaRequest.getLocal().setLogradouro(dto.getLogradouro());
+                    denunciaRequest.getLocal().setEstado("São Paulo");
+
+                    // Veículo
+                    denunciaRequest.getVeiculos().get(0).setMarcaVeiculo(dto.getDescr_tipo_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setModeloVeiculo(dto.getDescr_marca_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setAnoVeiculo(parseInteger(dto.getAno_modelo()));
+                    denunciaRequest.getVeiculos().get(0).setPlacaVeiculo(sanitizeString(dto.getPlaca_veiculo()));
+                    denunciaRequest.getVeiculos().get(0).setCorVeiculo(dto.getDesc_cor_veiculo());
+                    denunciaRequest.getVeiculos().get(0).setTipoVeiculo(VeiculoType.valueOf(dto.getDescr_tipo_veiculo()));
+
+                    ArtigoRequest artigo = new ArtigoRequest();
+                    artigo.setIdArtigo(id);
+                    // Todo: Verificar se o usuário quer receber alertas
+                    //denunciaRequest.setReceberAlertas(true);
                     try {
                         ocorrenciaService.criarDenuncia(denunciaRequest);
                     } catch (Exception e) {
@@ -156,14 +151,14 @@ public class ArquivoService {
 
         if (!encontrados.isEmpty()) {
             // Retorna o ID do primeiro encontrado
-            return encontrados.get(0).getId();
+            return encontrados.get(0).getIdArtigo();
         } else {
             // Cria novo artigo com rubrica como descrição
             Artigo novo = new Artigo();
             novo.setCodArtigo(rubrica); // ou algum valor padrão, se necessário
-            novo.setDescricao(rubrica);
+            novo.setDescricaoArtigo(rubrica);
             Artigo salvo = artigoRepository.save(novo);
-            return salvo.getId();
+            return salvo.getIdArtigo();
         }
     }
     private String getCellValueAsString(Cell cell) {

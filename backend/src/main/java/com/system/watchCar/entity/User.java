@@ -1,68 +1,165 @@
 package com.system.watchCar.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.system.watchCar.interfaces.IRole;
+import com.system.watchCar.interfaces.IUserSimple;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "TB_USUARIO")
-public class User {
-
+@Table(name = "TB_USER")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class User implements IUserSimple, UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
-    @SequenceGenerator(name = "usuario_seq", sequenceName = "ISEQ$$_76217", allocationSize = 1)
-    @Column(name = "ID")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idUser;
 
     @NotBlank
-    @Column(name = "NOME")
-    private String username;
+    @Column(nullable = false)
+    private String userName;
 
     @NotBlank
-    @Column(name = "SENHA")
+    @Column(nullable = false)
     private String password;
 
     @Email
-    @Column(name = "EMAIL")
+    @Column(unique = true)
     private String email;
 
     // Adicionando os campos CPF e ALERTA
-    @Column(name = "CPF", length = 11)
+    @Column(unique = true, length = 11)
     private String cpf;
 
-    @Column(name = "ALERTA")
-    private Boolean alerta; // ALERTA pode ser true ou false
+    private Boolean activated;
 
-    // Relacionamento com a role (papel do usuário)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "TIPO", referencedColumnName = "ID")
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
-    // Campos adicionais para perfis específicos
+    public User() {
+    }
 
-    @Column(name = "DELEGACIA")
-    private String delegate; // Para Policial, Agente de Segurança, Investigador
+    @Override
+    public User setIdUser(Long id) {
+        this.idUser = id;
+        return this;
+    }
 
-    @Column(name = "DISTINTIVO")
-    private String badge; // Para Policial, Agente de Segurança, Investigador
+    @Override
+    public Long getIdUser() {
+        return idUser;
+    }
 
-    @Column(name = "RA")
-    private String ra; // Para Policial, Agente de Segurança, Investigador
+    @Override
+    public User setUserName(String username) {
+        this.userName = username;
+        return this;
+    }
 
-    @Column(name = "DEPARTAMENTO")
-    private String departamento; // Para Gestor de Segurança Pública
+    @Override
+    public String getUserName() {
+        return userName;
+    }
 
-    @Column(name = "CARGO")
-    private String cargo; // Para Gestor de Segurança Pública
+    @Override
+    public User setPassword(String password) {
+        this.password = password;
+        return this;
+    }
 
-    @Column(name = "ATIVO")
-    private Boolean ativo;
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public User setCpf(String cpf) {
+        this.cpf = cpf;
+        return this;
+    }
+
+    @Override
+    public String getCpf() {
+        return cpf;
+    }
+
+    @Override
+    public User setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    @Override
+    public User setUserActivated(boolean active) {
+        this.activated = active;
+        return this;
+    }
+
+    @Override
+    public Boolean getUserActivated() {
+        return activated;
+    }
+
+    @Override
+    public User addRole(IRole role) {
+        roles.add(role.toRole(Role.class));
+        return this;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
+    }
+
+    public boolean hasRole(String roleName) {
+        for (Role role : roles) {
+            if (role.getAuthority().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String getUsername() {
+        return cpf;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

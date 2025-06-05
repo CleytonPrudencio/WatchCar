@@ -5,16 +5,18 @@
       RouterLink.center-link(to="/register") Se não tem conta, cadastre-se
       form(@submit.prevent="handleLogin")
         div.input-group
-          label(for="loginCpf") CPF
+          label(for="cpf") CPF
           input(
             type="text"
-            id="loginCpf"
-            v-model="loginCpf"
+            id="cpf"
+            name="cpf"
+            v-model="formData.cpf"
+            @input="validateInputs"
             maxlength="14"
             required
-            autocomplete="off"
           )
-          span.error-message(v-if="cpfError") {{ cpfError }}
+          span.error-message(v-if="error.name==='cpf'") {{error.message}}
+
 
         div.input-group.password-group
           label(for="loginPassword") Senha
@@ -22,11 +24,15 @@
             input(
               :type="showPassword ? 'text' : 'password'"
               id="loginPassword"
-              v-model="loginPassword"
+              name="password"
+              v-model="formData.password"
+              @input="validateInputs"
+              @blur="validations(formData, error)"
               required
             )
             span.toggle-icon(@click="showPassword = !showPassword")
               i(:class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'")
+            span.error-message(v-if="error.name === 'password'") {{ error.message }}
 
         button(type="submit") Entrar
       span.forgot-password(@click="openForgotPasswordModal") Esqueci a senha
@@ -35,19 +41,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { login as loginApi, fetchUserData as fetchUserData } from '@/services/authService'
-import { toast } from 'vue3-toastify'
-import ForgotPasswordModal from '@/views/components/ForgotPasswordModal.vue'
+import * as authService from '@/services/auth-service'
 import { useLoadingStore } from '@/stores/loadingStore'
+import ForgotPasswordModal from '@/views/components/ForgotPasswordModal.vue'
+import axios from 'axios'
+import { onMounted, reactive, ref } from 'vue'
+import { toast } from 'vue3-toastify'
+import { formatCPF, replaceNumbers, validations } from '../utils/form'
+import router from '@/router'
+
 const store = useLoadingStore()
 
-const loginCpf = ref('')
-const loginPassword = ref('')
+interface LoginProps {
+  cpf: string
+  password: string
+}
+
+const formData = reactive<LoginProps>({} as LoginProps)
+const error = ref({ name: '', message: '' })
 const showPassword = ref(false)
-const cpfError = ref('')
-const router = useRouter()
 const forgotPasswordModal = ref<InstanceType<typeof ForgotPasswordModal> | null>(null)
 
 onMounted(() => {
@@ -58,81 +70,57 @@ onMounted(() => {
   }
 })
 
+const validateInputs = (event) => {
+  var name = event.target.name.trim()
+  var value = event.target.value.trim()
+  formData[name] = value
+
+  // Criando a formatação do CPF
+  if (name === 'cpf') {
+    formData.cpf = formatCPF(value)
+  }
+  error.value = { name: '', message: '' } // Reseta o erro ao validar os inputs
+  if ((name === 'cpf' && value.length == 14) || (name === 'password' && value.length > 5)) {
+    validations(formData, error.value)
+  }
+}
+
 const openForgotPasswordModal = () => {
   if (forgotPasswordModal.value) {
     forgotPasswordModal.value.openModal() // Acessando o método openModal do componente filho
   }
 }
-// Função para formatar CPF
-function formatCPF(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-}
-
-// Watcher para validar CPF
-watch(loginCpf, (val) => {
-  loginCpf.value = formatCPF(val)
-  cpfError.value = !isValidCPF(val) ? 'CPF inválido' : '' // Exibir erro caso CPF seja inválido
-})
-
-function isValidCPF(cpf: string): boolean {
-  cpf = cpf.replace(/[^\d]+/g, '')
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
-
-  let sum = 0
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf.charAt(i)) * (10 - i)
-  let rev = 11 - (sum % 11)
-  if (rev === 10 || rev === 11) rev = 0
-  if (rev !== parseInt(cpf.charAt(9))) return false
-
-  sum = 0
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf.charAt(i)) * (11 - i)
-  rev = 11 - (sum % 11)
-  if (rev === 10 || rev === 11) rev = 0
-  return rev === parseInt(cpf.charAt(10))
-}
 
 // Função de login
-const handleLogin = async () => {
-  if (!loginCpf.value || !loginPassword.value) {
-    toast.warning('Preencha todos os campos obrigatórios para login.')
-    return
-  }
-
-  if (cpfError.value) {
-    toast.error('Por favor, verifique o CPF inserido.')
-    return
-  }
-
-  try {
-    loginCpf.value = loginCpf.value.replace(/\D/g, '')
-    store.startLoading() // Inicia o loading
-
-    const response = await loginApi(loginCpf.value, loginPassword.value)
-    if (response && response.token) {
-      localStorage.setItem('authToken', response.token)
-
-      const userData = await fetchUserData()
-      toast.success('Login realizado com sucesso!')
-      localStorage.setItem('userName', userData.username)
-      localStorage.setItem('userPerfil', userData.role.name)
-      localStorage.setItem('userId', userData.id)
-      store.stopLoading() // Para o loading quando a ação terminar
-
-      window.dispatchEvent(new Event('storage'))
-      await router.push({ name: 'ocorrencias' })
-      window.location.reload()
-    } else {
-      store.stopLoading() // Para o loading quando a ação terminar
-      toast.error('Erro ao fazer login. Verifique seu CPF e senha.')
-    }
-  } catch (err) {
+const handleLogin = async (event) => {
+  event.preventDefault()
+  store.startLoading() // Inicia o loading
+  // Validações
+  if (!validations(formData, error.value)) {
     store.stopLoading() // Para o loading quando a ação terminar
-    toast.error('Erro ao realizar login.')
+    toast.error(error.value.message)
+    return
   }
+
+  await authService
+    .loginRequest({ username: replaceNumbers(formData.cpf), password: formData.password })
+    .then((response) => {
+      authService.saveAccessToken(response.data.access_token)
+      toast.success('Login realizado com sucesso!')
+      window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
+      router.push('/ocorrencias') // Redireciona para o dashboard após o login
+      window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
+    })
+    .catch((error) => {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.error || 'Erro ao fazer o login')
+      } else {
+        toast.error('Erro ao fazer o login ', error.message || 'Erro desconhecido')
+      }
+    })
+    .finally(() => {
+      store.stopLoading() // Para o loading quando a ação terminar
+    })
 }
 </script>
 
