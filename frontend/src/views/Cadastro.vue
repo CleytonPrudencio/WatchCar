@@ -108,9 +108,9 @@ import type { UsuarioGestorProps } from '@/types/user-type'
 import { computed, reactive, ref } from 'vue'
 import { formatCPF, validations, validaPassword,replaceNumbers } from '../utils/form'
 import { useLoadingStore } from '@/stores/loadingStore'
-import api from '../services/api'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { registerRequest } from '@/services/auth-service'
 
 const store = useLoadingStore()
 const router = useRouter()
@@ -148,6 +148,8 @@ const handleRegister = async (event) => {
     toast.error(error.value.message)
     return
   }
+
+  // Validação de senha
   if (!validaPassword(String(confirmPassword.value), formData.password)) {
     error.value = { name: 'confirmPassword', message: 'As senhas não conferem' }
     store.stopLoading() // Para o loading quando a ação terminar
@@ -157,8 +159,7 @@ const handleRegister = async (event) => {
 
   formData.cpf = replaceNumbers(formData.cpf) // Formata o CPF antes de enviar
 
-  await api
-    .post('/register', formData)
+  await registerRequest(formData)
     .then(() => {
       toast.success('Cadastro realizado com sucesso!')
       store.stopLoading() // Para o loading quando a ação terminar

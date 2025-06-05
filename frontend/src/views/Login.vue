@@ -49,6 +49,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 import { formatCPF, replaceNumbers, validations } from '../utils/form'
 import router from '@/router'
+import { jwtDecode } from 'jwt-decode'
 
 const store = useLoadingStore()
 
@@ -102,17 +103,16 @@ const handleLogin = async (event) => {
     return
   }
 
+  formData.cpf = replaceNumbers(formData.cpf) // Formata o CPF antes de enviar
+
   await authService
-    .loginRequest({ username: replaceNumbers(formData.cpf), password: formData.password })
+    .loginRequest(formData)
     .then((response) => {
-
-      console.log('Login response:', response)
-
       authService.saveAccessToken(response.data.access_token)
       toast.success('Login realizado com sucesso!')
-      window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
-      router.push('/ocorrencias') // Redireciona para o dashboard após o login
-      window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
+      //window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
+      //router.push('/ocorrencias') // Redireciona para o dashboard após o login
+      //window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {
