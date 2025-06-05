@@ -70,7 +70,6 @@ const logout = () => {
 
 // Computed reativo para verificar se o usuário tem permissão para acessar a página de gráficos
 const userHasPermission = () => {
-  //return getPerfil(userAuth.roles[0]) === 'GESTOR_DE_SEGURANCA_PUBLICA' // Substitua com o perfil adequado
   return userAuth.roles.includes('GESTOR_DE_SEGURANCA_PUBLICA')
 }
 
