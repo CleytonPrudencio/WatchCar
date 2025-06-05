@@ -33,13 +33,13 @@ export const registerRequest = (data: any) => {
 }
 
 export function getAccessToken() {
-  return accessTokenRepository.get();
+  return accessTokenRepository.getKeys();
 }
 
 export function logout() {
-  accessTokenRepository.remove();
+  accessTokenRepository.removeToken();
 }
 
 export function saveAccessToken(token: string) {
-  accessTokenRepository.save(token);
+  accessTokenRepository.saveToken(token);
 }

@@ -3,7 +3,7 @@ import { ROLES_KEY, TOKEN_KEY, USER_KEY } from '../utils/system'
 import type { AuthProps, UserProps } from '@/types/user-type'
 
 // Armazena o usuário decodificado no localStorage
-export function save(token: string) {
+export function saveToken(token: string) {
   const decode = jwtDecode(token) // Decodifica o token JWT para verificar se está correto
   if (decode && decode.sub) {
     localStorage.setItem(USER_KEY, decode.sub)
@@ -20,8 +20,9 @@ export function getKeys(): AuthProps {
 }
 
 // Retorna o usuário armazenado no localStorage
-export function remove() {
+export function removeToken() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
   localStorage.removeItem(ROLES_KEY)
+  localStorage.clear();
 }

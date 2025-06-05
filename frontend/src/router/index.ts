@@ -1,13 +1,15 @@
+import { getKeys } from '@/localstorage/access-token-repository'
+import { TOKEN_KEY } from '@/utils/system'
+import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
+import Grafico from '@/views/Grafico.vue'
+import Ocorrencias from '@/views/Ocorrencias.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import Cadastro from '../views/Cadastro.vue'
-import Login from '../views/Login.vue'
-import Inicio from '../views/Inicio.vue'
-import Sobre from '../views/Sobre.vue'
 import Denuncia from '../views/Denuncia.vue'
-import PasswordResetModal from '@/views/components/PasswordResetModal.vue'
-import { fetchUserData } from '@/services/authService'
+import Inicio from '../views/Inicio.vue'
+import Login from '../views/Login.vue'
 import MeusDados from '../views/MeusDados.vue'
-import Grafico from '@/views/Grafico.vue'
+import Sobre from '../views/Sobre.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,8 +36,8 @@ const router = createRouter({
     },
     {
       path: '/ocorrencias',
-      name: 'CadastroEndereco',
-      component: Cadastro,
+      name: 'Ocorrência',
+      component: Ocorrencias,
     },
     {
       path: '/denuncia',
@@ -63,24 +65,22 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.meta.requiresAuth
-  const token = localStorage.getItem('authToken')
-
+  const token = localStorage.getItem(TOKEN_KEY)
   if (requiresAuth && !token) {
     return next({ name: 'login' })
   }
-
   next()
 })
 
 router.beforeEach(async (to, from, next) => {
-  const token = localStorage.getItem('authToken')
-
+  const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     try {
-      const userData = await fetchUserData() // Atualiza userName, userPerfil, userId
-      localStorage.setItem('userName', userData.username)
-      localStorage.setItem('userPerfil', userData.role.name)
-      localStorage.setItem('userId', userData.id)
+      const userData = getKeys() // Obtém os dados do usuário do localStorage
+      //const userData = await fetchUserData() // Atualiza userName, userPerfil, userId
+      localStorage.setItem('userName', userData.name)
+      localStorage.setItem('userPerfil', userData.roles[0])
+      localStorage.setItem('userId', '1')
       window.dispatchEvent(new Event('storage'))
     } catch (err) {
       console.error('Erro ao buscar dados do usuário', err)

@@ -1,6 +1,9 @@
 import type { ErrorType } from '@/types/erros-type'
 
 export const getPerfil = (roles: string[]): string => {
+  if(!roles || roles === undefined || roles.length === 0) {
+    return 'Público'
+  }
   const perfil = [];
   for (const [key, val] of Object.entries(roles)) {
     switch (val) {

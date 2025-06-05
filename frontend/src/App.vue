@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { toast } from 'vue3-toastify'
+import { computed, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
+import { getKeys } from './localstorage/access-token-repository'
+import * as authService from './services/auth-service'
+import type { AuthProps } from './types/user-type'
+import { getPerfil } from './utils/form'
 
 const router = useRouter()
 
-// Ref reativa que controla o estado de autenticação
-const authToken = ref(localStorage.getItem('authToken'))
-const userName = ref(localStorage.getItem('userName') || 'Usuário')
-const perfilUsuario = ref(localStorage.getItem('userPerfil') || 'PUBLICO')
+// User autenticado
+const userAuth = reactive<AuthProps>(getKeys() as AuthProps)
+
+// Verificar se o usuário está logado
+const isLoggedIn = ref(false)
 
 // Monitora mudanças no localStorage
 onMounted(() => {
@@ -21,61 +25,29 @@ onUnmounted(() => {
 
 // Atualiza dados do usuário sempre que há alterações no localStorage
 function updateUserData() {
-  authToken.value = localStorage.getItem('authToken')
-  userName.value = localStorage.getItem('userName') || 'Usuário'
-  perfilUsuario.value = localStorage.getItem('userPerfil') || 'PUBLICO'
-}
-
-// Mapeia os perfis para um formato legível
-const roleMap: Record<string, string> = {
-  PUBLICO: 'Público',
-  POLICIAL: 'Policial',
-  AGENTE_DE_SEGURANCA: 'Agente de Segurança',
-  INVESTIGADOR: 'Investigador',
-  GESTOR_DE_SEGURANCA_PUBLICA: 'Gestor de Segurança Pública',
+  // Atualiza o objeto reativo com os novos dados
+  const newUser = getKeys()
+  if (newUser) {
+    userAuth.name = newUser.name || 'Usuário'
+    userAuth.roles = newUser.roles || "['PUBLICO']"
+    userAuth.token = newUser.token || ''
+  }
+  isLoggedIn.value = !!userAuth.token
 }
 
 // Computed reativo para o perfil formatado
 const perfilUsuarioFormatado = computed(() => {
-  return roleMap[perfilUsuario.value] || perfilUsuario.value
-})
-
-// Computed reativo para verificar se o usuário está logado
-const isLoggedIn = computed(() => authToken.value !== null)
-
-// Computed reativo para verificar se o usuário tem permissão para acessar a página de gráficos
-const userHasPermission = computed(() => {
-  return perfilUsuario.value === 'GESTOR_DE_SEGURANCA_PUBLICA' // Substitua com o perfil adequado
-})
-
-// Sempre que o token mudar, salvar no localStorage
-watchEffect(() => {
-  if (authToken.value) {
-    localStorage.setItem('authToken', authToken.value)
-  } else {
-    localStorage.removeItem('authToken')
-  }
+  return getPerfil(userAuth.roles)
 })
 
 // Mesmo para o nome
 watchEffect(() => {
-  if (userName.value && userName.value !== 'Usuário') {
-    localStorage.setItem('userName', userName.value)
+  if (userAuth.name && userAuth.name !== 'Usuário') {
+    userAuth.name = userAuth.name.trim() || 'Usuário'
   } else {
-    localStorage.removeItem('userName')
+    userAuth.name = ''
   }
 })
-
-// Função de logout
-const handleLogout = () => {
-  authToken.value = null
-  userName.value = 'Usuário'
-  perfilUsuario.value = 'PUBLICO' // Reseta o perfil ao fazer logout
-  localStorage.removeItem('authToken')
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userPerfil')
-  router.push({ name: 'login' })
-}
 
 // Funções para o controle do menu
 const menuAberto = ref(false)
@@ -87,12 +59,27 @@ const toggleMenu = () => {
 const fecharMenu = () => {
   menuAberto.value = false
 }
+
+const logout = () => {
+  authService.logout()
+  updateUserData()
+  menuAberto.value = false // Fecha o menu ao sair
+  isLoggedIn.value = false; // Atualiza o estado de login
+  router.push('/login'); // Redireciona para a página de login
+}
+
+// Computed reativo para verificar se o usuário tem permissão para acessar a página de gráficos
+const userHasPermission = () => {
+  //return getPerfil(userAuth.roles[0]) === 'GESTOR_DE_SEGURANCA_PUBLICA' // Substitua com o perfil adequado
+  return userAuth.roles.includes('GESTOR_DE_SEGURANCA_PUBLICA')
+}
+
 </script>
 
 <template lang="pug">
 div.layout
   div.alerta-sistema
-    p Atenção: Este sistema é um projeto de testes e 
+    p Atenção: Este sistema é um projeto de testes e
       strong não representa uma plataforma oficial de denúncias
       | . As informações aqui inseridas são fictícias e utilizadas exclusivamente para fins acadêmicos e demonstrativos.
 
@@ -120,10 +107,10 @@ div.layout
             RouterLink.nav-button.primary.ml(to="/register" @click="fecharMenu") Cadastre-se
         div(v-if="isLoggedIn" class="nav-user-wrapper")
           div.nav-user-info
-            span.nav-user-name {{ userName }}
-            div.nav-user-role {{ perfilUsuarioFormatado }}
+            span.nav-user-name {{ userAuth.name }}
+            div.nav-user-role {{ getPerfil(userAuth.roles) }}
             RouterLink.nav-button.small-button.ml(to="/meus-dados" @click="fecharMenu") Meus Dados
-          button.nav-button.primary(@click="() => { handleLogout(); fecharMenu() }") Sair
+          button.nav-button.primary(@click="() => { logout(); fecharMenu() }") Sair
 
 
 
