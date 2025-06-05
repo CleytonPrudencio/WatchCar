@@ -1,5 +1,28 @@
 import type { ErrorType } from '@/types/erros-type'
 
+export const getPerfil = (roles: string[]): string => {
+  const perfil = [];
+  for (const [key, val] of Object.entries(roles)) {
+    switch (val) {
+      case 'POLICIAL':
+        perfil.push('Polícial')
+        break;
+      case 'AGENTE_DE_SEGURANCA':
+        perfil.push('Agente de Segurança')
+        break;
+      case 'INVESTIGADOR':
+        perfil.push('Investigador')
+        break;
+      case 'GESTOR_DE_SEGURANCA_PUBLICA':
+        perfil.push('Gestor de Segurança Pública')
+        break;
+      default:
+        perfil.push('Público')
+    }
+  }
+  return perfil.join(', ')
+}
+
 export const validations = (props: any, error: ErrorType): boolean => {
   for (const [key, val] of Object.entries(props)) {
     const value = props[key]
