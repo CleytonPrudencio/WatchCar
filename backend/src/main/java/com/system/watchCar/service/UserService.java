@@ -20,6 +20,7 @@ import com.system.watchCar.repository.UserGestorRepository;
 import com.system.watchCar.repository.UserRepository;
 import com.system.watchCar.service.exceptions.UserExecption;
 import com.system.watchCar.service.interfaces.IAuthService;
+import com.system.watchCar.utils.Msg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -118,6 +119,14 @@ public class UserService implements IAuthService {
     }
 
     @Transactional(readOnly = true)
+    public IUserSimple findById(Long id) {
+        if(id == null) {
+            throw new UserExecption("User ID cannot be null");
+        }
+        return userRepository.findById(id).orElseThrow(()-> new UserExecption("User not found with ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
     public UserDTO findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .map(UserDTO::new)
@@ -179,6 +188,7 @@ public class UserService implements IAuthService {
             return JWT.create()
                     .withIssuer(clientId)
                     .withSubject(usuario.getUserName())
+                    .withClaim("id", usuario.getIdUser())
                     .withClaim("username", usuario.getUsername())
                     .withClaim("roles", usuario.getRoles().stream().map(role -> role.getAuthority()).toList())
                     .withExpiresAt(genExpirationDateTime())

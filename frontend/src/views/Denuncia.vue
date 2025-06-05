@@ -1,179 +1,16 @@
-<template lang="pug">
-.template
-  .denuncia
-    h1 Registrar Denúncia de Roubo ou Furto de Veículo
-
-    // Linha do tempo
-    .timeline
-      .progress-line(:class="{ completed: progresso === 100 }")
-        .fill(:style="{ width: progresso + '%' }")
-      .step(:class="{ active: etapa === 1, completed: etapa > 1 }")
-        i.fas.fa-user
-        span Dados Pessoais
-      .step(:class="{ active: etapa === 2, completed: etapa > 2 }")
-        i.fas.fa-map-marker-alt
-        span Local
-      .step(:class="{ active: etapa === 3, completed: etapa > 3 }")
-        i.fas.fa-car
-        span Veículo
-      .step(:class="{ active: etapa === 4, completed: etapa > 4 }")
-        i.fas.fa-comment
-        span Descrição
-      .step(:class="{ active: etapa === 5 }")
-        i.fas.fa-check-circle
-        span Finalizar
-
-
-
-    .line
-    form(@submit.prevent="enviarDenuncia")
-      template(v-if="etapa === 1")
-        .step-content(:class="{'active-step': etapa === 1}")
-          .input-anonimo
-            label(for="anonimo") Denunciar de forma anônima
-            .anonimo-checkbox
-              input(type="checkbox" id="anonimo" v-model="anonimo" @change="toggleAnonimo")
-
-          .input-group(v-if="!anonimo")
-            label(for="username")
-            | Nome 
-            span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="username" v-model="usuario.username" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
-
-          .input-group(v-if="!anonimo")
-            label(for="cpf") 
-            | CPF
-            span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="cpf" v-model="usuario.cpf" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
-
-          .input-group(v-if="!anonimo")
-            label(for="email") 
-            | E-mail
-            span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="email" id="email" v-model="usuario.email" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
-
-      template(v-if="etapa === 2")
-        .step-content(:class="{'active-step': etapa === 2}")
-          .input-group
-            label(for="cep") 
-            | CEP
-            span.text-danger() *
-            input(
-              type="text"
-              id="cep"
-              v-model="formattedCep"
-              maxlength="9"
-              placeholder="Digite o CEP"
-              required
-              @input="formatCepInput"
-              @blur="buscarEndereco"
-            )
-          .input-group
-            label(for="logradouro") Logradouro
-            input(type="text" id="logradouro" v-model="logradouro" required :disabled="cep.length < 8")
-          
-          .input-group
-            label(for="bairro") Bairro
-            input(type="text" id="bairro" v-model="bairro" required :disabled="cep.length < 8")
-          
-          .input-group
-            label(for="cidade") Cidade
-            input(type="text" id="cidade" v-model="cidade" required :disabled="cep.length < 8")
-          
-          .input-group
-            label(for="estado") Estado
-            input(type="text" id="estado" v-model="estado" required :disabled="cep.length < 8")
-
-      template(v-if="etapa === 3")
-        .step-content(:class="{'active-step': etapa === 3}")
-          
-          .input-group
-            label(for="tipoOcorrenciaId") 
-            | Tipo de Ocorrência
-            span.text-danger() *
-            select(id="tipoOcorrenciaId" v-model="tipoOcorrencia" required)
-              option(value="" disabled selected) Selecione o Tipo de Ocorrência
-              option(v-for="tipo in tipoOcorrenciaList" :key="tipo.id" :value="tipo.id") {{ tipo.name }}
-          
-          
-          .input-group
-            label(for="placa") 
-            | Placa do Veículo
-            span.text-danger() *
-            input(type="text" id="placa" v-model="placa" required)
-          .input-group
-            label(for="ano") 
-              | Ano do Veículo
-              span.text-danger() *
-            select(id="ano" v-model="ano" required)
-              option(value="" disabled selected) Selecione o ano
-              option(v-for="ano in anosDisponiveis" :key="ano" :value="ano") {{ ano }}
-
-          .input-group
-            label(for="marca") 
-            | Marca
-            span.text-danger() *
-            input(type="text" id="marca" v-model="marca" required)
-          .input-group
-            label(for="modelo") 
-            | Modelo
-            span.text-danger() *
-            input(type="text" id="modelo" v-model="modelo" required)
-          .input-group
-            label(for="cor") 
-            | Cor
-            span.text-danger() *
-            input(type="text" id="cor" v-model="cor" required)
-
-      template(v-if="etapa === 4")
-        .step-content(:class="{'active-step': etapa === 4}")
-          .input-group
-            label(for="dataOcorrencia") 
-            | Data da Ocorrência
-            span.text-danger() *
-            input(type="date" id="dataOcorrencia" v-model="dataOcorrencia" required)
-            
-          .input-group
-            label(for="horaOcorrencia") 
-            | Hora da Ocorrência
-            span.text-danger() *
-            input(type="time" id="horaOcorrencia" v-model="horaOcorrencia" required)
-            
-          .input-group
-            label(for="descricao") 
-            | Descrição
-            span.text-danger() *
-            textarea(id="descricao" v-model="descricao" required)
-
-      template(v-if="etapa === 5")
-        .step-content(:class="{'active-step': etapa === 5}")
-          .termo-container
-            h2 Termo de Envio de Denúncia
-            p Ao prosseguir, você confirma que as informações fornecidas são verdadeiras e que entende as implicações legais da denúncia falsa.
-            
-          .input-alertas(v-if="!anonimo")
-            label(for="receberAlertas") Deseja receber alertas por e-mail sobre sua denúncia?
-            .alertas-checkbox
-              input(type="checkbox" id="receberAlertas" v-model="receberAlertas")
-              span Receber alertas por e-mail
-
-    .botoes
-      button.btn-voltar(type="button" @click="voltar" :disabled="etapa === 1") Voltar
-      button.btn-avancar(type="button" @click="proximaEtapa" :disabled="!podeAvancar") {{ etapa === 5 ? 'Enviar Denúncia' : 'Próxima Etapa' }}
-
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-import { fetchUserData } from '@/services/authService'
-import { toast } from 'vue3-toastify'
-import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
 import { buscarArtigos } from '@/services/artigoService'
-import { useLoadingStore } from '@/stores/loadingStore'
+import * as authService from '@/services/auth-service'
+import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
 import * as tipoOcorService from '@/services/tipoOcorrenciaService'
+import * as userService from '@/services/userService'
+import { useLoadingStore } from '@/stores/loadingStore'
 import type { TipoOcorrenciaType } from '@/types/tipoOcorrencia'
+import type { AuthProps, UserSimpleProps } from '@/types/user-type'
+import axios from 'axios'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
 const store = useLoadingStore()
 const router = useRouter()
 
@@ -187,7 +24,7 @@ const horaOcorrencia = ref('')
 const dataOcorrencia = ref('')
 const descricao = ref('')
 const anonimo = ref(false)
-const tipoOcorrenciaList = ref<TipoOcorrenciaType[]>([]);
+const tipoOcorrenciaList = ref<TipoOcorrenciaType[]>([])
 const artigos = ref([])
 const artigoSelecionadoId = ref(null)
 const receberAlertas = ref(true) // valor padrão: sim
@@ -213,6 +50,8 @@ const formatCepInput = (event: Event) => {
 const etapa = ref(1) // Etapa inicial 1, agora etapa 2 será para localização
 
 // Definindo os dados do usuário
+const userAuth = reactive<AuthProps>(authService.getAccessToken())
+const usuarioData = reactive<UserSimpleProps>({} as UserSimpleProps)
 const usuario = ref({
   id: '',
   username: '',
@@ -269,29 +108,33 @@ const carregarArtigos = async () => {
 
 const carregarTiposOcorrencia = async () => {
   try {
-    tipoOcorrenciaList.value = await tipoOcorService.findAll();
+    tipoOcorrenciaList.value = await tipoOcorService.findAll()
   } catch (error) {
-    toast.error('Erro ao carregar os tipos de ocorrência.\n'+ error)
+    toast.error('Erro ao carregar os tipos de ocorrência.\n' + error)
   }
 }
 
 const buscarUsuario = async () => {
-  const token = localStorage.getItem('authToken')
-
+  const token = userAuth.token
   if (!token) {
     // Não faz requisição se não houver token
     console.warn('Token não encontrado. Usuário não está autenticado.')
     return
   }
-
-  try {
-    const usuarioData = await fetchUserData()
-    usuario.value = usuarioData
-    usuarioLogado.value = true
-  } catch (error) {
-    toast.error('Erro ao buscar dados do usuário já logado.')
-    console.error('Erro ao buscar dados do usuário:', error)
-  }
+  await userService
+    .findById(userAuth.id)
+    .then((response) => {
+      const newUser = response.data as UserSimpleProps
+      usuarioData.id = newUser.id
+      usuarioData.name = newUser.name
+      usuarioData.cpf = newUser.cpf
+      usuarioData.email = newUser.email
+    })
+    .catch((error) => {
+      console.error('Erro ao buscar usuário:', error)
+      toast.error('Erro ao buscar usuário. Verifique os dados e tente novamente.')
+    })
+  etapa.value = 2 // Se o usuário estiver logado, inicia na etapa 2
 }
 
 // Controle da etapa atual
@@ -315,12 +158,7 @@ const voltar = () => {
 
 const etapa1Valida = computed(() => {
   if (anonimo.value) return true
-
-  const nomeValido = usuario.value.username.trim() !== ''
-  const cpfValido = validarCPF(usuario.value.cpf)
-  const emailValido = validarEmail(usuario.value.email)
-
-  return nomeValido && cpfValido && emailValido
+  return (userAuth.token.length > 0)
 })
 
 // Validação da etapa 2
@@ -444,6 +282,171 @@ const mostrarAsteriscos = computed(() => {
   return usuario.value.username.trim() !== ''
 })
 </script>
+
+<template lang="pug">
+.template
+  .denuncia
+    h1 Registrar Denúncia de Roubo ou Furto de Veículo
+
+    // Linha do tempo
+    .timeline
+      .progress-line(:class="{ completed: progresso === 100 }")
+        .fill(:style="{ width: progresso + '%' }")
+      .step(:class="{ active: etapa === 1, completed: etapa > 1 }")
+        i.fas.fa-user
+        span Dados Pessoais
+      .step(:class="{ active: etapa === 2, completed: etapa > 2 }")
+        i.fas.fa-map-marker-alt
+        span Local
+      .step(:class="{ active: etapa === 3, completed: etapa > 3 }")
+        i.fas.fa-car
+        span Veículo
+      .step(:class="{ active: etapa === 4, completed: etapa > 4 }")
+        i.fas.fa-comment
+        span Descrição
+      .step(:class="{ active: etapa === 5 }")
+        i.fas.fa-check-circle
+        span Finalizar
+
+
+
+    .line
+    form(@submit.prevent="enviarDenuncia")
+      template(v-if="etapa === 1")
+        .step-content(:class="{'active-step': etapa === 1}")
+          .input-anonimo
+            label(for="anonimo") Denunciar de forma anônima
+            .anonimo-checkbox
+              input(type="checkbox" id="anonimo" v-model="anonimo" @change="toggleAnonimo")
+
+          .input-group(v-if="!anonimo")
+            label(for="username")
+            | Nome
+            span.text-danger(v-if="mostrarAsteriscos") *
+            input(type="text" id="username" v-model="usuarioData.name" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+
+          .input-group(v-if="!anonimo")
+            label(for="cpf")
+            | CPF
+            span.text-danger(v-if="mostrarAsteriscos") *
+            input(type="text" id="cpf" v-model="usuarioData.cpf" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+
+          .input-group(v-if="!anonimo")
+            label(for="email")
+            | E-mail
+            span.text-danger(v-if="mostrarAsteriscos") *
+            input(type="email" id="email" v-model="usuarioData.email" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+
+      template(v-if="etapa === 2")
+        .step-content(:class="{'active-step': etapa === 2}")
+          .input-group
+            label(for="cep")
+            | CEP
+            span.text-danger() *
+            input(
+              type="text"
+              id="cep"
+              v-model="formattedCep"
+              maxlength="9"
+              placeholder="Digite o CEP"
+              required
+              @input="formatCepInput"
+              @blur="buscarEndereco"
+            )
+          .input-group
+            label(for="logradouro") Logradouro
+            input(type="text" id="logradouro" v-model="logradouro" required :disabled="cep.length < 8")
+
+          .input-group
+            label(for="bairro") Bairro
+            input(type="text" id="bairro" v-model="bairro" required :disabled="cep.length < 8")
+
+          .input-group
+            label(for="cidade") Cidade
+            input(type="text" id="cidade" v-model="cidade" required :disabled="cep.length < 8")
+
+          .input-group
+            label(for="estado") Estado
+            input(type="text" id="estado" v-model="estado" required :disabled="cep.length < 8")
+
+      template(v-if="etapa === 3")
+        .step-content(:class="{'active-step': etapa === 3}")
+
+          .input-group
+            label(for="tipoOcorrenciaId")
+            | Tipo de Ocorrência
+            span.text-danger() *
+            select(id="tipoOcorrenciaId" v-model="tipoOcorrencia" required)
+              option(value="" disabled selected) Selecione o Tipo de Ocorrência
+              option(v-for="tipo in tipoOcorrenciaList" :key="tipo.id" :value="tipo.id") {{ tipo.name }}
+
+
+          .input-group
+            label(for="placa")
+            | Placa do Veículo
+            span.text-danger() *
+            input(type="text" id="placa" v-model="placa" required)
+          .input-group
+            label(for="ano")
+              | Ano do Veículo
+              span.text-danger() *
+            select(id="ano" v-model="ano" required)
+              option(value="" disabled selected) Selecione o ano
+              option(v-for="ano in anosDisponiveis" :key="ano" :value="ano") {{ ano }}
+
+          .input-group
+            label(for="marca")
+            | Marca
+            span.text-danger() *
+            input(type="text" id="marca" v-model="marca" required)
+          .input-group
+            label(for="modelo")
+            | Modelo
+            span.text-danger() *
+            input(type="text" id="modelo" v-model="modelo" required)
+          .input-group
+            label(for="cor")
+            | Cor
+            span.text-danger() *
+            input(type="text" id="cor" v-model="cor" required)
+
+      template(v-if="etapa === 4")
+        .step-content(:class="{'active-step': etapa === 4}")
+          .input-group
+            label(for="dataOcorrencia")
+            | Data da Ocorrência
+            span.text-danger() *
+            input(type="date" id="dataOcorrencia" v-model="dataOcorrencia" required)
+
+          .input-group
+            label(for="horaOcorrencia")
+            | Hora da Ocorrência
+            span.text-danger() *
+            input(type="time" id="horaOcorrencia" v-model="horaOcorrencia" required)
+
+          .input-group
+            label(for="descricao")
+            | Descrição
+            span.text-danger() *
+            textarea(id="descricao" v-model="descricao" required)
+
+      template(v-if="etapa === 5")
+        .step-content(:class="{'active-step': etapa === 5}")
+          .termo-container
+            h2 Termo de Envio de Denúncia
+            p Ao prosseguir, você confirma que as informações fornecidas são verdadeiras e que entende as implicações legais da denúncia falsa.
+
+          .input-alertas(v-if="!anonimo")
+            label(for="receberAlertas") Deseja receber alertas por e-mail sobre sua denúncia?
+            .alertas-checkbox
+              input(type="checkbox" id="receberAlertas" v-model="receberAlertas")
+              span Receber alertas por e-mail
+
+    .botoes
+      button.btn-voltar(type="button" @click="voltar" :disabled="etapa === 1") Voltar
+      button.btn-avancar(type="button" @click="proximaEtapa" :disabled="!podeAvancar") {{ etapa === 5 ? 'Enviar Denúncia' : 'Próxima Etapa' }}
+
+</template>
 
 <style scoped>
 .denuncia {

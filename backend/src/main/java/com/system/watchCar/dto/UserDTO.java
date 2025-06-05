@@ -99,7 +99,7 @@ public class UserDTO implements IUserSimple {
     }
 
     @Override
-    public Boolean getUserActivated() {
+    public boolean getUserActivated() {
         return ativo;
     }
 

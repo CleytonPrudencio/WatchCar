@@ -122,7 +122,7 @@ public class UserGestorRequest implements IGestorSecurity {
     }
 
     @Override
-    public Boolean getUserActivated() {
+    public boolean getUserActivated() {
         return activated;
     }
 

@@ -16,6 +16,7 @@ public class UserSimpleResponse implements IUserSimple, IResponseOK {
     private String name;
     private String email;
     private List<RoleDTO> roles = new ArrayList<>();
+    private boolean activated;
 
     public UserSimpleResponse() {
     }
@@ -78,13 +79,14 @@ public class UserSimpleResponse implements IUserSimple, IResponseOK {
 
     @Override
     public UserSimpleResponse setUserActivated(boolean active) {
+        this.activated = active;
         return this;
     }
 
     @JsonProperty("ativo")
     @Override
-    public Boolean getUserActivated() {
-        return null;
+    public boolean getUserActivated() {
+        return activated;
     }
 
     @Override

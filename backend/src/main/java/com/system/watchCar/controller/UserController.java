@@ -4,7 +4,9 @@ import com.system.watchCar.controller.openapi.UserOpenApi;
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
+import com.system.watchCar.dto.response.UserResponse;
 import com.system.watchCar.dto.response.UserSimpleResponse;
+import com.system.watchCar.interfaces.IUserSimple;
 import com.system.watchCar.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,11 @@ public class UserController implements UserOpenApi {
     public ResponseEntity<UserSimpleResponse> register(@Valid @RequestBody UserGestorRequest request) {
         UserSimpleResponse createdUser = service.save(request);
         return ResponseEntity.ok(createdUser);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<IUserSimple> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id).toUserSimple(UserResponse.class));
     }
 
     @GetMapping

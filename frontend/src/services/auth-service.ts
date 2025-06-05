@@ -1,4 +1,5 @@
 import * as accessTokenRepository from "@/localstorage/access-token-repository";
+import type { AuthProps } from "@/types/user-type";
 import { requestBackEnd } from '@/utils/requests';
 import { CLIENT_ID, CLIENT_SECRET } from "@/utils/system";
 import { type AxiosRequestConfig } from 'axios';
@@ -32,7 +33,7 @@ export const registerRequest = (data: any) => {
   return requestBackEnd(config);
 }
 
-export function getAccessToken() {
+export function getAccessToken(): AuthProps {
   return accessTokenRepository.getKeys();
 }
 

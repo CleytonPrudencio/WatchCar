@@ -113,7 +113,7 @@ public class User implements IUserSimple, UserDetails {
     }
 
     @Override
-    public Boolean getUserActivated() {
+    public boolean getUserActivated() {
         return activated;
     }
 

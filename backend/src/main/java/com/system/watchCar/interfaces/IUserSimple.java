@@ -23,7 +23,7 @@ public interface IUserSimple {
     String getEmail();
 
     IUserSimple setUserActivated(boolean active);
-    Boolean getUserActivated();
+    boolean getUserActivated();
 
     IUserSimple addRole(IRole role);
     Collection<? extends IRole> getRoles();

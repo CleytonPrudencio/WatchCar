@@ -17,7 +17,18 @@ import { toast } from 'vue3-toastify'
 const statusSelecionado = ref('Todos')
 
 const filtrarPorStatus = (status: string) => {
+  if (status === 'Todos') {
+    // Se o status for 'Todos', limpa o filtro de status
+    statusSelecionado.value = 'Todos' // Marca 'Todos' como ativo
+    filters.value.status = '' // Limpa o filtro de status
+  } else {
+    // Para os outros status, apenas define o status selecionado
+    statusSelecionado.value = status
+    filters.value.status = status
+  }
 
+  currentPage.value = 0 // Reseta a página para a primeira página
+  fetchOcorrencias() // Recarrega as ocorrências com o filtro atualizado
 }
 
 const store = useLoadingStore()
@@ -70,15 +81,28 @@ const limparFiltros = () => {
     veiculoModelo: '',
   }
   statusSelecionado.value = 'Todos'
+  fetchOcorrencias()
 }
 
 const abrirModalResponsavel = async (ocorrencia: any) => {
+  ocorrenciaSelecionada.value = ocorrencia
+  modalResponsavelAberto.value = true
+
+  // Verifica se o usuário é responsável
+  const isResponsavel = await verificarResponsavel(ocorrencia.id, userId)
+
+  // Se o usuário não for responsável, o botão mostrará "Assumir"
+  responsabilidadeParaAlterar.value = isResponsavel
 }
 
 const abrirModalDetalhes = (ocorrencia: any) => {
+  ocorrenciaSelecionada.value = ocorrencia
+  modalDetalhesAberto.value = true
 }
 
 const abrirModalEditar = (ocorrencia: any) => {
+  ocorrenciaSelecionada.value = ocorrencia
+  modalEditarAberto.value = true
 }
 const menuAbertoIndex = ref<number | null>(null)
 
@@ -87,6 +111,9 @@ const toggleMenu = (index: number) => {
 }
 
 const abrirModalLocal = (ocorrencia: any) => {
+  ocorrenciaSelecionada.value = ocorrencia
+  console.log('ocoo ', ocorrenciaSelecionada)
+  modalLocalAberto.value = true
 }
 // Fecha menu ao clicar fora
 document.addEventListener('click', (event) => {
@@ -95,6 +122,10 @@ document.addEventListener('click', (event) => {
     menuAbertoIndex.value = null
   }
 })
+if (!token) {
+  localStorage.setItem('loginMessage', 'Faça login.')
+  window.location.href = '/login'
+}
 
 const formatDataHora = (dataHora: any) => {
   const date = new Date(dataHora)
@@ -110,6 +141,14 @@ const formatDataHora = (dataHora: any) => {
 
 const fetchOcorrencias = async () => {
   try {
+    store.startLoading() // Inicia o loading
+    const data = await obterOcorrencias(filters.value, currentPage.value, pageSize.value)
+    ocorrencias.value = data.content
+    carregarFiltrosDinamicos()
+    totalelements.value = data.totalElements
+    totalPages.value = data.totalPages
+    fetchContagemStatus() // Atualiza o dashboard
+    store.stopLoading() // Para o loading quando a ação terminar
   } catch (error) {
     console.error('Erro ao carregar as ocorrências:', error)
   }
@@ -117,8 +156,30 @@ const fetchOcorrencias = async () => {
 
 const carregarFiltrosDinamicos = async () => {
   try {
+    const todas = await obterTodasOcorrencias()
 
+    // Garantir que os Sets são tipados como Set<string>
+    const placas = new Set<string>()
+    const marcas = new Set<string>()
+    const modelos = new Set<string>()
+    const usuarios = new Set<string>()
+    const emails = new Set<string>()
 
+    todas.forEach((ocorrencia: any) => {
+      // Aqui estamos verificando se as propriedades existem antes de adicionar aos Sets
+      if (ocorrencia.veiculoPlaca) placas.add(ocorrencia.veiculoPlaca)
+      if (ocorrencia.veiculoMarca) marcas.add(ocorrencia.veiculoMarca)
+      if (ocorrencia.veiculoModelo) modelos.add(ocorrencia.veiculoModelo)
+      if (ocorrencia.usuarioNome) usuarios.add(ocorrencia.usuarioNome)
+      if (ocorrencia.usuarioEmail) emails.add(ocorrencia.usuarioEmail)
+    })
+
+    // Atribuindo os valores aos refs
+    placasDisponiveis.value = Array.from(placas)
+    marcasDisponiveis.value = Array.from(marcas)
+    modelosDisponiveis.value = Array.from(modelos)
+    usuariosDisponiveis.value = Array.from(usuarios)
+    emailsDisponiveis.value = Array.from(emails)
   } catch (e) {
     console.error('Erro ao carregar filtros dinâmicos:', e)
   }
@@ -134,7 +195,7 @@ const handleFileUpload = async (event: Event) => {
     const resultado = await importarCsv(file)
     store.stopLoading() // Para o loading quando a ação terminar
 
-
+    fetchOcorrencias() // Atualiza a lista após importar
     toast.success('Importado com sucesso:')
   } catch (error: any) {
     store.stopLoading() // Para o loading quando a ação terminar
