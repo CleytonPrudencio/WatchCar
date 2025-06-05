@@ -10,13 +10,13 @@ export const getPerfil = (roles: string[]): string => {
       case 'POLICIAL':
         perfil.push('Polícial')
         break;
-      case 'AGENTE_DE_SEGURANCA':
+      case 'AGENTE DE SEGURANCA':
         perfil.push('Agente de Segurança')
         break;
       case 'INVESTIGADOR':
         perfil.push('Investigador')
         break;
-      case 'GESTOR_DE_SEGURANCA_PUBLICA':
+      case 'GESTOR DE SEGURANCA PUBLICA':
         perfil.push('Gestor de Segurança Pública')
         break;
       default:
@@ -36,7 +36,7 @@ export const validations = (props: any, error: ErrorType): boolean => {
           error.message = 'Name must be at least 5 characters long'
         }
         break
-      case 'cpf':
+      case 'cpfs':
         if (!isValidCPF(value)) {
           error.name = 'cpf'
           error.message = 'CPF is not valid'
