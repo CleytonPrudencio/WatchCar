@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 @Service
@@ -166,7 +168,7 @@ public class UserService implements IAuthService {
         return TokenResponseDTO
                 .builder()
                 .access_token(geraTokenJwt(usuario))
-                .expire(Instant.now().plusSeconds(jwtDurationSeconds))
+                .expire(genExpirationDateTime())
                 .refreshToken(geraTokenJwt(usuario))
                 .build();
     }
@@ -179,10 +181,14 @@ public class UserService implements IAuthService {
                     .withSubject(usuario.getUserName())
                     .withClaim("username", usuario.getUsername())
                     .withClaim("roles", usuario.getRoles().stream().map(role -> role.getAuthority()).toList())
-                    .withExpiresAt(Instant.now().plusSeconds(jwtDurationSeconds))
+                    .withExpiresAt(genExpirationDateTime())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new UserExecption("Erro ao tentar gerar o token! " + exception.getMessage());
         }
+    }
+
+    private Instant genExpirationDateTime() {
+        return LocalDateTime.now().plusSeconds(jwtDurationSeconds).toInstant(ZoneOffset.of("-03:00"));
     }
 }
