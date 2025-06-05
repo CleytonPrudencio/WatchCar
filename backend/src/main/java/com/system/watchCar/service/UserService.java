@@ -1,8 +1,14 @@
 package com.system.watchCar.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
+import com.system.watchCar.dto.requests.AuthDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
+import com.system.watchCar.dto.response.TokenResponseDTO;
 import com.system.watchCar.dto.response.UserSimpleResponse;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.entity.UserAgente;
@@ -13,21 +19,33 @@ import com.system.watchCar.repository.UserAgenteRepository;
 import com.system.watchCar.repository.UserGestorRepository;
 import com.system.watchCar.repository.UserRepository;
 import com.system.watchCar.service.exceptions.UserExecption;
+import com.system.watchCar.service.interfaces.IAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService implements IAuthService {
 
-    @Autowired
-    private AuthService authService;
+    @Value("${security.client-id}")
+    private String clientId;
+
+    @Value("${security.client-secret}")
+    private String clientSecret;
+
+    @Value("${security.jwt.duration}")
+    private Integer jwtDurationSeconds;
 
     @Autowired
     private UserRepository userRepository;
@@ -112,9 +130,65 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username"));
     }
 
-    @Transactional(readOnly = true)
-    public UserDTO getMe() {
-        User entity = authService.authenticated();
-        return new UserDTO(entity);
+    @Override
+    public TokenResponseDTO obterToken(AuthDTO authDto) {
+        User user = userRepository.findByCpf(authDto.cpf())
+                .orElseThrow(() -> new UserExecption("Usuário não encontrado com o CPF: " + authDto.cpf()));
+        return TokenResponseDTO
+                .builder()
+                .access_token(geraTokenJwt(user))
+                .expire(Instant.now().plusSeconds(jwtDurationSeconds))
+                .refreshToken(geraTokenJwt(user))
+                .build();
+    }
+
+    @Override
+    public String validaTokenJwt(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(clientSecret);
+            return JWT.require(algorithm).
+                    withIssuer(clientId)
+                    .build()
+                    .verify(token)
+                    .getSubject();
+        }catch (JWTVerificationException e){
+            throw new UserExecption("Token inválido ou expirado: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public TokenResponseDTO obterRefreshToken(String refreshToken) {
+        String login = validaTokenJwt(refreshToken);
+        User usuario = userRepository.findByCpf(login).orElseThrow(()-> new UserExecption("Usuário não encontrado com o CPF: " + login));
+
+        var autentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(autentication);
+
+        return TokenResponseDTO
+                .builder()
+                .access_token(geraTokenJwt(usuario))
+                .expire(genExpirationDateTime())
+                .refreshToken(geraTokenJwt(usuario))
+                .build();
+    }
+
+    public String geraTokenJwt(User usuario) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(clientSecret);
+            return JWT.create()
+                    .withIssuer(clientId)
+                    .withSubject(usuario.getUserName())
+                    .withClaim("username", usuario.getUsername())
+                    .withClaim("roles", usuario.getRoles().stream().map(role -> role.getAuthority()).toList())
+                    .withExpiresAt(genExpirationDateTime())
+                    .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new UserExecption("Erro ao tentar gerar o token! " + exception.getMessage());
+        }
+    }
+
+    private Instant genExpirationDateTime() {
+        return LocalDateTime.now().plusSeconds(jwtDurationSeconds).toInstant(ZoneOffset.of("-03:00"));
     }
 }

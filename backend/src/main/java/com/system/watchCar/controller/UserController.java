@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController implements UserOpenApi {
 
     @Autowired
@@ -22,12 +22,6 @@ public class UserController implements UserOpenApi {
     public ResponseEntity<UserSimpleResponse> register(@Valid @RequestBody UserGestorRequest request) {
         UserSimpleResponse createdUser = service.save(request);
         return ResponseEntity.ok(createdUser);
-    }
-
-    @GetMapping(value = "/me")
-    public ResponseEntity<UserDTO> getMe() {
-        UserDTO dto = service.getMe();
-        return ResponseEntity.ok(dto);
     }
 
     @GetMapping

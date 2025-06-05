@@ -20,3 +20,9 @@ export interface UsuarioGestorProps extends UsuarioAgenteProps {
   departamento: string;
   cargo: string;
 }
+
+export type AuthProps = {
+  name: string
+  roles: string[]
+  token: string
+}

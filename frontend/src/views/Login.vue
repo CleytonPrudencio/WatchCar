@@ -103,8 +103,10 @@ const handleLogin = async (event) => {
     return
   }
 
+  formData.cpf = replaceNumbers(formData.cpf) // Formata o CPF antes de enviar
+
   await authService
-    .loginRequest({ username: replaceNumbers(formData.cpf), password: formData.password })
+    .loginRequest(formData)
     .then((response) => {
 
       const token = response.data.access_token;
