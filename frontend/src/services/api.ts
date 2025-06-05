@@ -10,6 +10,13 @@ const api = axios.create({
   },
 })
 
+export const apiLogin = axios.create({
+  baseURL: import.meta.env.BASE_URL, // base da sua API
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+})
+
 // Interceptor de resposta
 api.interceptors.response.use(
   (response) => response,

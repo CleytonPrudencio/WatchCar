@@ -11,8 +11,9 @@ import java.util.List;
 public interface ArtigoRepository extends JpaRepository<Artigo, Long> {
 
     // Busca se rubrica já está como código ou descrição
-    @Query("SELECT a FROM Artigo a WHERE LOWER(a.codArtigo) LIKE LOWER(CONCAT('%', :rubrica, '%')) " +
-            "OR LOWER(a.descricao) LIKE LOWER(CONCAT('%', :rubrica, '%'))")
+    @Query(nativeQuery = true, value = """
+        SELECT * FROM TB_ARTIGO_CRIMINAL WHERE cod_artigo = :rubrica;
+            """)
     List<Artigo> findByRubricaInCodigoOuDescricao(@Param("rubrica") String rubrica);
 
 }

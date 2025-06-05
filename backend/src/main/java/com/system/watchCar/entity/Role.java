@@ -1,21 +1,41 @@
 package com.system.watchCar.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.system.watchCar.interfaces.IRole;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 
-import javax.persistence.*;
-
-@Getter
-@Setter
+@AllArgsConstructor
 @Entity
-@Table(name = "TB_USUARIO_ROLE")
-public class Role {
+@Table(name = "TB_ROLE")
+public class Role implements IRole{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long roleId;
+    private String authority;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ROLE", nullable = false, unique = true)
-    private RoleType name;
+    public Role() {
+    }
+
+    @Override
+    public Role setIdRole(Long roleId) {
+        this.roleId = roleId;
+        return this;
+    }
+
+    @Override
+    public Long getIdRole() {
+        return roleId;
+    }
+
+    @Override
+    public Role setAuthority(String authority) {
+        this.authority = authority;
+        return this;
+    }
+
+    @Override
+    public String getAuthority() {
+        return authority;
+    }
 }
