@@ -28,7 +28,6 @@ public class User implements IUserSimple, UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Email
     @Column(unique = true)
     private String email;
 

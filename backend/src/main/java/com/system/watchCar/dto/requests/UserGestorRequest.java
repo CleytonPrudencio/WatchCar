@@ -33,7 +33,6 @@ public class UserGestorRequest implements IGestorSecurity {
     private String email;
 
     @Schema(description = "Digite o CPF do usuário", required = true, example = "12345678901")
-    @CPF(message = "CPF inválido")
     private String cpf;
 
     @Schema(description = "Lista de papéis do usuário", example = "[{\"idRole\": 1}]")
