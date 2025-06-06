@@ -8,7 +8,7 @@ import { useLoadingStore } from '@/stores/loadingStore'
 import type { EnderecoProps } from '@/types/endereco-type'
 import type { TipoOcorrenciaType } from '@/types/tipoOcorrencia'
 import type { AuthProps, UserSimpleProps } from '@/types/user-type'
-import { formatCEP, formatCPF, validations } from '@/utils/form'
+import { formatCEP, formatCPF, replaceNumbers, validations } from '@/utils/form'
 import axios from 'axios'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -46,7 +46,7 @@ const formatCepInput = (event: Event) => {
   }
 
   // Atualiza o CEP limpo para busca
-  cep.value = raw.slice(0, 8)
+  enderecoForm.cep = raw.slice(0, 8)
 }
 // Controle da etapa atual
 const etapa = ref(1) // Etapa inicial 1, agora etapa 2 será para localização
@@ -60,7 +60,6 @@ const errorUser = ref({ name: '', message: '' }) // Objeto para armazenar erros 
 const enderecoForm = reactive<EnderecoProps>({} as EnderecoProps) // Objeto para armazenar os dados do endereço;
 const errorEndereco = ref({ name: '', message: '' }) // Objeto para armazenar erros de validação de endereço
 
-const cep = ref('')
 const logradouro = ref('')
 const bairro = ref('')
 const cidade = ref('')
@@ -72,17 +71,23 @@ const progresso = computed(() => {
 
 // Função para buscar endereço usando o CEP
 const buscarEndereco = async () => {
-  if (cep.value.length === 8) {
+  if (enderecoForm.cep && enderecoForm.cep.length == 9) {
+    store.startLoading() // Inicia o loading
+    const cep = replaceNumbers(enderecoForm.cep) // Remove caracteres não numéricos do CEP
     try {
-      store.startLoading() // Inicia o loading
-      const response = await axios.get(`https://viacep.com.br/ws/${cep.value}/json/`)
-      logradouro.value = response.data.logradouro || ''
-      bairro.value = response.data.bairro || ''
-      cidade.value = response.data.localidade || ''
-      estado.value = response.data.uf || ''
-      store.stopLoading() // Para o loading quando a ação terminar
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+      enderecoForm.logradouro = response.data.logradouro || ''
+      enderecoForm.bairro = response.data.bairro || ''
+      enderecoForm.cidade = response.data.localidade || ''
+      enderecoForm.estado = response.data.uf || ''
     } catch (error) {
-      toast.error('Erro ao buscar endereço. Verifique o CEP.')
+      enderecoForm.logradouro = ''
+      enderecoForm.bairro = ''
+      enderecoForm.cidade = ''
+      enderecoForm.estado = ''
+      toast.error('Verifique o CEP.')
+    }finally {
+      store.stopLoading() // Para o loading quando a ação terminar
     }
   }
 }
@@ -90,11 +95,9 @@ const buscarEndereco = async () => {
 // Validação da etapa de localização
 const etapa2Valida = computed(() => {
   return (
-    cep.value.length === 8 &&
-    logradouro.value.trim() !== '' &&
-    bairro.value.trim() !== '' &&
-    cidade.value.trim() !== '' &&
-    estado.value.trim() !== ''
+    enderecoForm.cep &&
+    enderecoForm.logradouro &&
+    enderecoForm.bairro
   )
 })
 
@@ -146,12 +149,14 @@ const validateInputs = (event: Event) => {
 
   usuarioForm[name] = value // Atualiza o campo correspondente no objeto usuarioForm
 
+  // Se for o nome, remove espaços extras
   if (name === 'cpf') {
     usuarioForm.cpf = formatCPF(value)
   }
-  console.log("name: ", name, " - Validando CEP: ", value)
+  // Se for o CEP formata
   if (name === 'cep') {
     enderecoForm.cep = formatCEP(value)
+    buscarEndereco() // Busca o endereço ao digitar o CEP
   }
   errorUser.value = { name: '', message: '' } // Reseta o erro ao validar os inputs
   validations(usuarioForm, errorUser.value)
@@ -231,26 +236,7 @@ const enviarDenuncia = async () => {
 
     const denuncia = {
       idUsuario: usuarioForm.id || 1, // Se o usuário estiver logado, pega o id, caso contrário, usa null
-      username: anonimo.value ? 'Anônimo' : usuarioForm.name,
-      cpf: anonimo.value ? null : usuarioForm.cpf,
-      email: anonimo.value ? null : usuarioForm.email,
-      descricao: descricao.value,
-      statusDenuncia: 'Em andamento',
-      horaOcorrencia: horaOcorrencia.value,
-      dataHora: `${dataOcorrencia.value}T${horaOcorrencia.value}`,
-      placa: placa.value,
-      ano: ano.value,
-      tipo: 'Carro',
-      modelo: modelo.value,
-      marca: marca.value,
-      cor: cor.value,
-      artigoLei: artigoSelecionadoId.value,
-      receberAlertas: receberAlertas.value,
-      cep: cep.value,
-      logradouro: logradouro.value,
-      bairro: bairro.value,
-      cidade: cidade.value,
-      estado: estado.value,
+      username: anonimo.value ? 'Anônimo' : usuarioForm.name
     }
     store.startLoading() // Inicia o loading
     await enviarDenunciaService(denuncia)
@@ -364,19 +350,19 @@ const mostrarAsteriscos = computed(() => {
             )
           .input-group
             label(for="logradouro") Logradouro
-            input(type="text" id="logradouro" name="logradouro" v-model="enderecoForm.logradouro" @input="validateInputs" required :disabled="cep.length < 8")
+            input(type="text" id="logradouro" name="logradouro" v-model="enderecoForm.logradouro" @input="validateInputs" required :disabled="true")
 
           .input-group
             label(for="bairro") Bairro
-            input(type="text" id="bairro" v-model="bairro" required :disabled="cep.length < 8")
+            input(type="text" id="bairro" v-model="enderecoForm.bairro" required :disabled="true")
 
           .input-group
             label(for="cidade") Cidade
-            input(type="text" id="cidade" v-model="cidade" required :disabled="cep.length < 8")
+            input(type="text" id="cidade" v-model="enderecoForm.cidade" required :disabled="true")
 
           .input-group
             label(for="estado") Estado
-            input(type="text" id="estado" v-model="estado" required :disabled="cep.length < 8")
+            input(type="text" id="estado" v-model="enderecoForm.estado" required :disabled="true")
 
       template(v-if="etapa === 3")
         .step-content(:class="{'active-step': etapa === 3}")
