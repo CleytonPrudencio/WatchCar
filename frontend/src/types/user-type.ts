@@ -33,5 +33,5 @@ export type AuthProps = {
   id: number
   name: string
   roles: string[]
-  token: string
+  token: string | undefined
 }
