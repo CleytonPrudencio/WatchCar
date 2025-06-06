@@ -5,8 +5,10 @@ import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasS
 import * as tipoOcorService from '@/services/tipoOcorrenciaService'
 import * as userService from '@/services/userService'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { EnderecoProps } from '@/types/endereco-type'
 import type { TipoOcorrenciaType } from '@/types/tipoOcorrencia'
 import type { AuthProps, UserSimpleProps } from '@/types/user-type'
+import { formatCEP, formatCPF, validations } from '@/utils/form'
 import axios from 'axios'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -51,13 +53,13 @@ const etapa = ref(1) // Etapa inicial 1, agora etapa 2 será para localização
 
 // Definindo os dados do usuário
 const userAuth = reactive<AuthProps>(authService.getAccessToken())
-const usuarioData = reactive<UserSimpleProps>({} as UserSimpleProps)
-const usuario = ref({
-  id: '',
-  username: '',
-  cpf: '',
-  email: '',
-})
+const usuarioForm = reactive<UserSimpleProps>({} as UserSimpleProps)
+const errorUser = ref({ name: '', message: '' }) // Objeto para armazenar erros de validação
+
+// Endereço
+const enderecoForm = reactive<EnderecoProps>({} as EnderecoProps) // Objeto para armazenar os dados do endereço;
+const errorEndereco = ref({ name: '', message: '' }) // Objeto para armazenar erros de validação de endereço
+
 const cep = ref('')
 const logradouro = ref('')
 const bairro = ref('')
@@ -102,7 +104,7 @@ const carregarArtigos = async () => {
     const data = await buscarArtigos()
     artigos.value = data
   } catch (error) {
-    toast.error('Erro ao carregar os artigos do Código Penal.')
+    toast.error('Erro ao carregar os artigos do Código Penal.' + error)
   }
 }
 
@@ -115,26 +117,44 @@ const carregarTiposOcorrencia = async () => {
 }
 
 const buscarUsuario = async () => {
-  const token = userAuth.token
-  if (!token) {
+  // verifica se o usuário está logado
+  if (!userAuth.id) {
     // Não faz requisição se não houver token
-    console.warn('Token não encontrado. Usuário não está autenticado.')
+    //console.warn('Token não encontrado. Usuário não está autenticado.')
     return
   }
   await userService
     .findById(userAuth.id)
     .then((response) => {
       const newUser = response.data as UserSimpleProps
-      usuarioData.id = newUser.id
-      usuarioData.name = newUser.name
-      usuarioData.cpf = newUser.cpf
-      usuarioData.email = newUser.email
+      usuarioForm.id = newUser.id
+      usuarioForm.name = newUser.name
+      usuarioForm.cpf = newUser.cpf
+      usuarioForm.email = newUser.email
+      etapa.value = 2 // Se o usuário estiver logado, inicia na etapa 2
     })
     .catch((error) => {
       console.error('Erro ao buscar usuário:', error)
       toast.error('Erro ao buscar usuário. Verifique os dados e tente novamente.')
     })
-  etapa.value = 2 // Se o usuário estiver logado, inicia na etapa 2
+}
+
+const validateInputs = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const name = input.name
+  const value = input.value
+
+  usuarioForm[name] = value // Atualiza o campo correspondente no objeto usuarioForm
+
+  if (name === 'cpf') {
+    usuarioForm.cpf = formatCPF(value)
+  }
+  console.log("name: ", name, " - Validando CEP: ", value)
+  if (name === 'cep') {
+    enderecoForm.cep = formatCEP(value)
+  }
+  errorUser.value = { name: '', message: '' } // Reseta o erro ao validar os inputs
+  validations(usuarioForm, errorUser.value)
 }
 
 // Controle da etapa atual
@@ -158,7 +178,15 @@ const voltar = () => {
 
 const etapa1Valida = computed(() => {
   if (anonimo.value) return true
-  return (userAuth.token.length > 0)
+  if (
+    usuarioForm.name &&
+    usuarioForm.cpf &&
+    usuarioForm.email &&
+    validations(usuarioForm, errorUser.value)
+  ) {
+    return true
+  }
+  return userAuth.id
 })
 
 // Validação da etapa 2
@@ -195,17 +223,17 @@ const enviarDenuncia = async () => {
 
     // Se o usuário não for anônimo e estiver logado, usa o id do usuário
     if (!anonimo.value && usuarioLogado.value) {
-      idUsuario = usuario.value.id
+      idUsuario = usuarioForm.id
     } else if (anonimo.value) {
       // Se for anônimo, o id será 1
       idUsuario = 1
     }
 
     const denuncia = {
-      idUsuario: usuario.value.id || 1, // Se o usuário estiver logado, pega o id, caso contrário, usa null
-      username: anonimo.value ? 'Anônimo' : usuario.value.username,
-      cpf: anonimo.value ? null : usuario.value.cpf,
-      email: anonimo.value ? null : usuario.value.email,
+      idUsuario: usuarioForm.id || 1, // Se o usuário estiver logado, pega o id, caso contrário, usa null
+      username: anonimo.value ? 'Anônimo' : usuarioForm.name,
+      cpf: anonimo.value ? null : usuarioForm.cpf,
+      email: anonimo.value ? null : usuarioForm.email,
       descricao: descricao.value,
       statusDenuncia: 'Em andamento',
       horaOcorrencia: horaOcorrencia.value,
@@ -255,31 +283,8 @@ onMounted(() => {
   }
 })
 
-function validarEmail(email: string): boolean {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return re.test(email.toLowerCase())
-}
-
-function validarCPF(cpf: string): boolean {
-  cpf = cpf.replace(/[^\d]+/g, '')
-
-  if (!cpf || cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
-
-  let soma = 0
-  for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i)
-  let resto = 11 - (soma % 11)
-  if (resto === 10 || resto === 11) resto = 0
-  if (resto !== parseInt(cpf.charAt(9))) return false
-
-  soma = 0
-  for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i)
-  resto = 11 - (soma % 11)
-  if (resto === 10 || resto === 11) resto = 0
-  return resto === parseInt(cpf.charAt(10))
-}
-
 const mostrarAsteriscos = computed(() => {
-  return usuario.value.username.trim() !== ''
+  return String(usuarioForm.name).trim() !== ''
 })
 </script>
 
@@ -323,19 +328,22 @@ const mostrarAsteriscos = computed(() => {
             label(for="username")
             | Nome
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="username" v-model="usuarioData.name" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="text" id="username" name="name" v-model="usuarioForm.name" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            span.error-message(v-if="errorUser.name==='name'") {{errorUser.message}}
 
           .input-group(v-if="!anonimo")
             label(for="cpf")
             | CPF
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="cpf" v-model="usuarioData.cpf" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="text" id="cpf" name="cpf" v-model="usuarioForm.cpf" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" maxlength="14" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            span.error-message(v-if="errorUser.name==='cpf'") {{errorUser.message}}
 
           .input-group(v-if="!anonimo")
             label(for="email")
             | E-mail
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="email" id="email" v-model="usuarioData.email" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="email" id="email" name="email" v-model="usuarioForm.email" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            span.error-message(v-if="errorUser.name==='email'") {{errorUser.message}}
 
       template(v-if="etapa === 2")
         .step-content(:class="{'active-step': etapa === 2}")
@@ -346,16 +354,17 @@ const mostrarAsteriscos = computed(() => {
             input(
               type="text"
               id="cep"
-              v-model="formattedCep"
+              name="cep"
+              v-model="enderecoForm.cep"
               maxlength="9"
               placeholder="Digite o CEP"
               required
-              @input="formatCepInput"
+              @input="validateInputs"
               @blur="buscarEndereco"
             )
           .input-group
             label(for="logradouro") Logradouro
-            input(type="text" id="logradouro" v-model="logradouro" required :disabled="cep.length < 8")
+            input(type="text" id="logradouro" name="logradouro" v-model="enderecoForm.logradouro" @input="validateInputs" required :disabled="cep.length < 8")
 
           .input-group
             label(for="bairro") Bairro
@@ -472,8 +481,7 @@ h1 {
 }
 
 .input-group input {
-  margin-bottom: 1.2rem;
-  margin-top: 6px;
+  margin-bottom: 1rem;
 }
 
 .input-anonimo {
@@ -676,6 +684,12 @@ button:disabled {
 /* Remover o ícone de check para etapas completadas */
 .step.completed::before {
   content: ''; /* Remover ícone de check */
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem; /* Tamanho da fonte para a mensagem de erro */
+  margin-top: 0.25rem;
 }
 
 @keyframes fadeIn {
