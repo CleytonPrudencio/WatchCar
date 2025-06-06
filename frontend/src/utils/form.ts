@@ -103,6 +103,13 @@ export const validationName = (name: string): boolean => {
   return true
 }
 
+// Formatação do CEP
+export function formatCEP(value: string): string {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
 // Função para formatar CPF
 export function formatCPF(value: string): string {
   return value
