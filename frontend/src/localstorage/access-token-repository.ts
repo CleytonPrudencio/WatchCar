@@ -9,16 +9,16 @@ export function saveToken(token: string) {
     localStorage.setItem(USER_ID_KEY, decode.id)
     localStorage.setItem(USER_KEY, decode.sub)
     localStorage.setItem(ROLES_KEY, JSON.stringify(decode.roles))
-    localStorage.setItem(TOKEN_KEY, token)
+    localStorage.setItem(TOKEN_KEY, token ?? undefined)
   }
 }
 
 export function getKeys(): AuthProps {
   const code = parseInt(String(localStorage.getItem(USER_ID_KEY)))
-  const token = String(localStorage.getItem(TOKEN_KEY))
+  const token = String(localStorage.getItem(TOKEN_KEY));
   const user = String(localStorage.getItem(USER_KEY))
   const roles = localStorage.getItem(ROLES_KEY)
-  return {id: code, name: user, roles: JSON.parse(roles), token: token};
+  return {id: code, name: user, roles: JSON.parse(roles), token: token ?? undefined};
 }
 
 // Retorna o usuário armazenado no localStorage
