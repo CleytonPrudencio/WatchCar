@@ -109,11 +109,10 @@ const handleLogin = async (event) => {
     .loginRequest(formData)
     .then((response) => {
       authService.saveAccessToken(response.data.access_token);
-      console.log('Token de acesso:', response.data.access_token)
       toast.success('Login realizado com sucesso!')
-      //window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
-      //router.push('/denuncia') // Redireciona para a denúncia após o login bem-sucedido
-      //window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
+      window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
+      router.push('/denuncia') // Redireciona para a denúncia após o login bem-sucedido
+      window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {
