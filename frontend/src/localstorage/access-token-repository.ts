@@ -7,7 +7,7 @@ export function saveToken(token: string) {
   const decode = jwtDecode(token) // Decodifica o token JWT para verificar se está correto
   if (decode && decode.sub) {
     localStorage.setItem(USER_ID_KEY, decode.id)
-    localStorage.setItem(USER_KEY, decode.sub)
+    localStorage.setItem(USER_KEY, decode.name)
     localStorage.setItem(ROLES_KEY, JSON.stringify(decode.roles))
     localStorage.setItem(TOKEN_KEY, token ?? undefined)
   }
