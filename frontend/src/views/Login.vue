@@ -41,24 +41,19 @@
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import * as authService from '@/services/auth-service'
 import { useLoadingStore } from '@/stores/loadingStore'
 import ForgotPasswordModal from '@/views/components/ForgotPasswordModal.vue'
 import axios from 'axios'
 import { onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue3-toastify'
-import { formatCPF, replaceNumbers, validations } from '../utils/form'
-import router from '@/router'
-import { jwtDecode } from 'jwt-decode'
+import { formatCPF, replaceNumbers, validations } from '../utils/forms'
+import type { UserLoginDTO } from '@/types/auth-type'
 
 const store = useLoadingStore()
 
-interface LoginProps {
-  cpf: string
-  password: string
-}
-
-const formData = reactive<LoginProps>({} as LoginProps)
+const formData = reactive<UserLoginDTO>({} as UserLoginDTO)
 const error = ref({ name: '', message: '' })
 const showPassword = ref(false)
 const forgotPasswordModal = ref<InstanceType<typeof ForgotPasswordModal> | null>(null)
