@@ -187,9 +187,9 @@ public class UserService implements IAuthService {
             Algorithm algorithm = Algorithm.HMAC256(clientSecret);
             return JWT.create()
                     .withIssuer(clientId)
-                    .withSubject(usuario.getUserName())
+                    .withSubject(usuario.getUsername())
                     .withClaim("id", usuario.getIdUser())
-                    .withClaim("username", usuario.getUsername())
+                    .withClaim("name", usuario.getUserName())
                     .withClaim("roles", usuario.getRoles().stream().map(role -> role.getAuthority()).toList())
                     .withExpiresAt(genExpirationDateTime())
                     .sign(algorithm);
