@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { getKeys } from './localstorage/access-token-repository'
 import * as authService from './services/auth-service'
 import type { AuthProps } from './types/user-type'
-import { getPerfil } from './utils/form'
+import { getPerfil } from './utils/forms'
 
 const router = useRouter()
 

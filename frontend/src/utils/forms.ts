@@ -1,24 +1,26 @@
+import type { EnderecoProps } from '@/types/endereco-type'
 import type { ErrorType } from '@/types/erros-type'
+import axios from 'axios'
 
 export const getPerfil = (roles: string[]): string => {
-  if(!roles || roles === undefined || roles.length === 0) {
+  if (!roles || roles === undefined || roles.length === 0) {
     return 'Público'
   }
-  const perfil = [];
+  const perfil = []
   for (const [key, val] of Object.entries(roles)) {
     switch (val) {
       case 'POLICIAL':
         perfil.push('Polícial')
-        break;
+        break
       case 'AGENTE DE SEGURANCA':
         perfil.push('Agente de Segurança')
-        break;
+        break
       case 'INVESTIGADOR':
         perfil.push('Investigador')
-        break;
+        break
       case 'GESTOR DE SEGURANCA PUBLICA':
         perfil.push('Gestor de Segurança Pública')
-        break;
+        break
       default:
         perfil.push('Público')
     }
@@ -105,9 +107,25 @@ export const validationName = (name: string): boolean => {
 
 // Formatação do CEP
 export function formatCEP(value: string): string {
-  return value
-    .replace(/\D/g, '')
-    .replace(/(\d{5})(\d)/, '$1-$2')
+  return value.replace(/\D/g, '').replace(/(\d{5})(\d)/, '$1-$2')
+}
+
+export const buscarEndereco = async (formData: EnderecoProps) => {
+  if (formData.cep && formData.cep.length == 9) {
+    const cep = replaceNumbers(formData.cep) // Remove caracteres não numéricos do CEP
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`)
+      formData.logradouro = response.data.logradouro
+      formData.bairro = response.data.bairro
+      formData.cidade = response.data.localidade
+      formData.estado = response.data.uf
+    } catch (error) {
+      formData.logradouro = ''
+      formData.bairro = ''
+      formData.cidade = ''
+      formData.estado = ''
+    }
+  }
 }
 
 // Função para formatar CPF
@@ -119,7 +137,7 @@ export function formatCPF(value: string): string {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 export function isValidCPF(cpf: string): boolean {
-  if( cpf === null || cpf === undefined || cpf.length < 10) return false;
+  if (cpf === null || cpf === undefined || cpf.length < 10) return false
   cpf = cpf.replace(/[^\d]+/g, '')
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false
 

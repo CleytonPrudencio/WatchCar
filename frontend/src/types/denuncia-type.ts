@@ -23,3 +23,8 @@ export interface DenunciaProps{
   statusOcorrencia: string;// 'PENDENTE', 'EM ANDAMENTO', 'CONCLUIDA', 'CANCELADA'
 
 }
+
+export type EtapaProps = {
+  valor: number;
+  avancar: boolean
+}

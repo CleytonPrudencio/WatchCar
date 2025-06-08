@@ -1,14 +1,13 @@
 import * as accessTokenRepository from "@/localstorage/access-token-repository";
+import type { UserLoginDTO } from "@/types/auth-type";
 import type { AuthProps } from "@/types/user-type";
 import { requestBackEnd } from '@/utils/requests';
 import { CLIENT_ID, CLIENT_SECRET } from "@/utils/system";
 import { type AxiosRequestConfig } from 'axios';
 
-export const loginRequest = (loginData: any) => {
-
+export const loginRequest = (loginData: UserLoginDTO) => {
   const headers = {
-    "Content-Type": "application/json",
-    Authorization: "Basic " + btoa(CLIENT_ID + ":" + CLIENT_SECRET),
+    "Content-Type": "application/json"
   };
   const config: AxiosRequestConfig = {
     method: "POST",
