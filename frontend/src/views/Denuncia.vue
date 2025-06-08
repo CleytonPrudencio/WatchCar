@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { buscarArtigos } from '@/services/artigoService'
+import * as artigoService from '@/services/artigoService'
 import * as authService from '@/services/auth-service'
 import * as denunciaService from '@/services/denunciaService'
 import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
-import * as tipoOcorService from '@/services/tipoOcorrenciaService'
 import * as userService from '@/services/userService'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { ArtigoProps } from '@/types/artigo-type'
 import type { DenunciaProps, EtapaProps } from '@/types/denuncia-type'
 import type { AuthProps, UserSimpleProps } from '@/types/user-type'
 import { buscarEndereco, formatCEP, formatCPF, validations } from '@/utils/forms'
@@ -29,6 +29,8 @@ const denunciaForm = reactive<DenunciaProps>({
   localDaOcorrencia: { cep: '' },
 } as DenunciaProps)
 
+const artigos = reactive<ArtigoProps[]>([])
+
 // Definindo os dados do formulário
 const placa = ref('')
 const ano = ref<number | null>(null) // ✅ esta é a correta
@@ -38,7 +40,6 @@ const cor = ref('')
 const horaOcorrencia = ref('')
 const descricao = ref('')
 const anonimo = ref(false)
-const artigos = ref([])
 const artigoSelecionadoId = ref(null)
 const receberAlertas = ref(true) // valor padrão: sim
 const anoAtual = new Date().getFullYear()
@@ -47,14 +48,6 @@ const anosDisponiveis = ref<number[]>([])
 // Endereço
 const errorEndereco = ref({ name: '', message: '' }) // Objeto para armazenar erros de validação de endereço
 
-const carregarArtigos = async () => {
-  try {
-    const data = await buscarArtigos()
-    artigos.value = data
-  } catch (error) {
-    toast.error('Erro ao carregar os artigos do Código Penal.' + error)
-  }
-}
 /*************************************************************
  *
  *                        Usuário
@@ -94,6 +87,14 @@ const validateInputs = async (event: Event) => {
   validations(usuarioForm, errorUser.value)
   denunciaForm.denunciante = usuarioForm // Atualiza o objeto denunciaForm com os dados do usuário
   denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
+
+  // Verifica se a etapa atual pode avançar
+  if(etapas[timeLine.value].avancar) {
+      setTimeout(() => {
+        const btn = document.querySelector('.btn-avancar') as HTMLButtonElement
+        if (btn) btn.focus()
+      }, 0)
+    }
 }
 
 /************************************************************
@@ -124,21 +125,30 @@ const voltar = () => {
 
 const progresso = computed(() => {
   // Total de 5 etapas: 0%, 25%, 50%, 75%, 100%
-  return (etapas.filter(e => e.avancar).length  / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
+  return (etapas.filter((e) => e.avancar).length / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
 })
+
+const carregarArtigos = async () => {
+  try {
+    const artigosData = await artigoService.buscarArtigos()
+    artigosData.forEach((artigo) => {
+      artigos.push({
+        idArtigo: artigo.idArtigo,
+        codArtigo: artigo.codArtigo,
+        descricaoArtigo: artigo.descricaoArtigo,
+        rubrica: artigo.rubrica,
+      })
+    })
+  } catch (error) {
+    toast.error('Erro ao carregar os artigos. Verifique a conexão e tente novamente.')
+  }
+}
 
 /************************************************************
  *
  *                Denúncia
  *
  ***********************************************************/
-const carregarTiposOcorrencia = async () => {
-  try {
-    tipoOcorrenciaList.value = await tipoOcorService.findAll()
-  } catch (error) {
-    toast.error('Erro ao carregar os tipos de ocorrência.\n' + error)
-  }
-}
 
 // Função para enviar a denúncia
 const enviarDenuncia = async () => {
@@ -181,7 +191,7 @@ const toggleAnonimo = () => {
 // Buscar dados do usuário assim que o componente for montado
 onMounted(() => {
   buscarUsuario()
-  //carregarArtigos()
+  carregarArtigos()
   //carregarTiposOcorrencia()
   denunciaService.getEtapa(denunciaForm, etapas)
   for (let ano = anoAtual; ano >= anoAtual - 10; ano--) {
@@ -293,7 +303,7 @@ const mostrarAsteriscos = computed(() => {
             span.text-danger() *
             select(id="tipoOcorrenciaId" v-model="tipoOcorrencia" required)
               option(value="" disabled selected) Selecione o Tipo de Ocorrência
-              option(v-for="tipo in tipoOcorrenciaList" :key="tipo.id" :value="tipo.id") {{ tipo.name }}
+              option(v-for="tipo in artigos" :key="tipo.idArtigo" :value="tipo.idArtigo") {{ tipo.descricaoArtigo }}
 
 
           .input-group
