@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/tipos_ocorrencias")
+@RequestMapping("/api/tipos_ocorrencias")
 public class TipoOcorrenciaController {
 
     @Autowired
