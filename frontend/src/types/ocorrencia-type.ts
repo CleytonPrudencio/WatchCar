@@ -1,5 +1,5 @@
 export interface OcorrenciaTypeProps {
-  idTipoOcorrencia?: number;
-  nameTipoOcorrencia: string;
-  descricaoTipoOcorrencia: string;
+  id?: number;
+  name: string;
+  description: string;
 }

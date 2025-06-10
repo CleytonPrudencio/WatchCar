@@ -86,9 +86,29 @@ export const validations = (props: any, error: ErrorType): boolean => {
           error.message = 'Cargo is required'
         }
         break
+      case 'dataOcorrencia':
+        if (isNullOrEmpty(value) || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          error.name = 'dataOcorrencia'
+          error.message = 'Data da ocorrência é obrigatória'
+        }
+        break
+      case 'dataHoraOcorrencia':
+        if (isNullOrEmpty(value) || !/^\d{2}:\d{2}$/.test(value)) {
+          error.name = 'dataHoraOcorrencia'
+          error.message = 'Hora da ocorrência é obrigatória'
+        }
+        break
+      case 'descricaoOcorrencia':
+        if (isNullOrEmpty(value) || value.length < 10) {
+          error.name = 'descricaoOcorrencia'
+          error.message =
+            'Descrição da ocorrência é obrigatória e deve ter pelo menos 10 caracteres'
+        }
+        break
       default:
         error.name = ''
         error.message = ''
+        delete props.error
     }
     if (error.name.length > 0) {
       break
@@ -103,6 +123,38 @@ export const validationName = (name: string): boolean => {
     return false
   }
   return true
+}
+
+export function formatPlaca(placa: string): string {
+  const valor = placa.toUpperCase()
+
+  // Remove caracteres não alfanuméricos
+  if (/^\d/.test(valor)) {
+    return valor.replace(/^\d+/, '')
+  }
+
+  // Formato novo: ABC1234 -> ABC-1234
+  if (/^[A-Z]{3}\d{2}.*$/.test(valor)) {
+    // Modelo antigo: ABC1234 -> ABC-1234
+    return valor.replace(/^([A-Z]{3})(\d{2})$/, '$1-$2')
+  }
+  return valor
+}
+
+export function formatAno(ano: string): string {
+  const valor = parseInt(ano.replace(/\D/g, '')) // Remove caracteres não numéricos
+
+  if (isNaN(valor)) {
+    return '' // Retorna string vazia se não for um número válido
+  }
+
+  if (ano.length > 3 && valor < 1900) {
+    return '1900' // Limita o ano mínimo a 1900
+  }
+  if (ano.length > 3 && valor > 2999) {
+    return '2999' // Limita o ano máximo a 2999
+  }
+  return '' + valor
 }
 
 // Formatação do CEP

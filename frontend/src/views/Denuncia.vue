@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import * as artigoService from '@/services/artigoService'
 import * as authService from '@/services/auth-service'
 import * as denunciaService from '@/services/denunciaService'
 import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
+import * as ocorrenciaTypeService from '@/services/tipoOcorrenciaService'
 import * as userService from '@/services/userService'
+import * as veiculoService from '@/services/veiculoService'
 import { useLoadingStore } from '@/stores/loadingStore'
-import type { ArtigoProps } from '@/types/artigo-type'
 import type { DenunciaProps, EtapaProps } from '@/types/denuncia-type'
+import type { OcorrenciaTypeProps } from '@/types/ocorrencia-type'
 import type { AuthProps, UserSimpleProps } from '@/types/user-type'
-import { buscarEndereco, formatCEP, formatCPF, validations } from '@/utils/forms'
+import type { VeiculoProps } from '@/types/veiculo-type'
+import {
+  buscarEndereco,
+  formatAno,
+  formatCEP,
+  formatCPF,
+  formatPlaca,
+  validations,
+} from '@/utils/forms'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
@@ -29,18 +38,11 @@ const denunciaForm = reactive<DenunciaProps>({
   localDaOcorrencia: { cep: '' },
 } as DenunciaProps)
 
-const artigos = reactive<ArtigoProps[]>([])
+const ocorrenciaTypes = reactive<OcorrenciaTypeProps[]>([])
+const ocorrenciaType = ref<OcorrenciaTypeProps>({} as OcorrenciaTypeProps) // Tipo de ocorrência selecionado;
 
 // Definindo os dados do formulário
-const placa = ref('')
-const ano = ref<number | null>(null) // ✅ esta é a correta
-const marca = ref('')
-const modelo = ref('')
-const cor = ref('')
-const horaOcorrencia = ref('')
-const descricao = ref('')
 const anonimo = ref(false)
-const artigoSelecionadoId = ref(null)
 const receberAlertas = ref(true) // valor padrão: sim
 const anoAtual = new Date().getFullYear()
 const anosDisponiveis = ref<number[]>([])
@@ -55,19 +57,20 @@ const errorEndereco = ref({ name: '', message: '' }) // Objeto para armazenar er
  *************************************************************/
 const errorUser = ref({ name: '', message: '' }) // Objeto para armazenar erros de validação
 const usuarioLogado = ref(false) // Controla se o usuário está logado
+const veiculo = reactive<VeiculoProps>({ placaVeiculo: '' } as VeiculoProps) // Objeto para armazenar os dados do veículo;
 
 // Busca os dados do usuário autenticado
 const buscarUsuario = async () => {
   try {
-    await userService.findById(userAuth.id, usuarioForm)
-    denunciaForm.denunciante = usuarioForm // Atualiza o objeto denunciaForm com os dados do usuário
+    await userService.findById(userAuth.id, denunciaForm.denunciante)
+    denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
   } catch (error) {
     console.error('Erro ao buscar usuário:', error)
     toast.error('Erro ao buscar usuário. Verifique os dados e tente novamente.')
   }
 }
 
-const validateInputs = async (event: Event) => {
+const onValidateInputsChange = async (event: Event) => {
   const input = event.target as HTMLInputElement
   const name = input.name
   const value = input.value
@@ -89,12 +92,12 @@ const validateInputs = async (event: Event) => {
   denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
 
   // Verifica se a etapa atual pode avançar
-  if(etapas[timeLine.value].avancar) {
-      setTimeout(() => {
-        const btn = document.querySelector('.btn-avancar') as HTMLButtonElement
-        if (btn) btn.focus()
-      }, 0)
-    }
+  if (etapas[timeLine.value].avancar && etapas[timeLine.value].valor !== 4) {
+    setTimeout(() => {
+      const btn = document.querySelector('.btn-avancar') as HTMLButtonElement
+      if (btn) btn.focus()
+    }, 0)
+  }
 }
 
 /************************************************************
@@ -128,20 +131,66 @@ const progresso = computed(() => {
   return (etapas.filter((e) => e.avancar).length / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
 })
 
-const carregarArtigos = async () => {
+/************************************************************
+ *
+ *                Controle de tipo de ocorrência
+ *
+ ***********************************************************/
+const carregarOcorrenciaType = async () => {
   try {
-    const artigosData = await artigoService.buscarArtigos()
-    artigosData.forEach((artigo) => {
-      artigos.push({
-        idArtigo: artigo.idArtigo,
-        codArtigo: artigo.codArtigo,
-        descricaoArtigo: artigo.descricaoArtigo,
-        rubrica: artigo.rubrica,
+    const ocorrenciaTypeData = await ocorrenciaTypeService.findAll()
+    ocorrenciaTypeData.forEach((type) => {
+      ocorrenciaTypes.push({
+        id: type.id,
+        name: type.name,
+        description: type.description,
       })
     })
   } catch (error) {
-    toast.error('Erro ao carregar os artigos. Verifique a conexão e tente novamente.')
+    toast.error('Erro ao carregar os tipos de ocorrência. Verifique a conexão e tente novamente.')
   }
+}
+
+const onTipoOcorrenciaChange = () => {
+  denunciaForm.tipoOcorrencia = ocorrenciaTypes.find((type) => type.id === ocorrenciaType.value)
+}
+
+/************************************************************
+ *
+ *                Controle de veículos
+ *
+ ***********************************************************/
+const validationVeiculoInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const name = input.name
+  const value = input.value
+
+  veiculo[name] = value // Atualiza o campo correspondente no objeto veiculo
+
+  if (name === 'placaVeiculo') {
+    veiculo.placaVeiculo = formatPlaca(value)
+  }
+
+  if (name === 'anoVeiculo') {
+    veiculo.anoVeiculo = formatAno(value)
+  }
+
+  // Adiciona a validação do veículo
+  denunciaForm.veiculos = [veiculo]
+  denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
+}
+
+const validationVeiculoFocus = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const name = input.name
+  const value = input.value
+
+  veiculo[name] = value // Atualiza o campo correspondente no objeto veiculo
+  veiculoService.validations(veiculo) // Valida os dados do veículo
+
+  // Adiciona a validação do veículo
+  denunciaForm.veiculos = [veiculo]
+  denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
 }
 
 /************************************************************
@@ -191,7 +240,7 @@ const toggleAnonimo = () => {
 // Buscar dados do usuário assim que o componente for montado
 onMounted(() => {
   buscarUsuario()
-  carregarArtigos()
+  carregarOcorrenciaType()
   //carregarTiposOcorrencia()
   denunciaService.getEtapa(denunciaForm, etapas)
   for (let ano = anoAtual; ano >= anoAtual - 10; ano--) {
@@ -245,21 +294,21 @@ const mostrarAsteriscos = computed(() => {
             label(for="username")
             | Nome
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="username" name="name" v-model="usuarioForm.name" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="text" id="username" name="name" v-model="usuarioForm.name" @input="onValidateInputsChange" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
             span.error-message(v-if="errorUser.name==='name'") {{errorUser.message}}
 
           .input-group(v-if="!anonimo")
             label(for="cpf")
             | CPF
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="text" id="cpf" name="cpf" v-model="usuarioForm.cpf" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" maxlength="14" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="text" id="cpf" name="cpf" v-model="usuarioForm.cpf" @input="onValidateInputsChange" @blur="validations(usuarioForm, errorUser)" maxlength="14" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
             span.error-message(v-if="errorUser.name==='cpf'") {{errorUser.message}}
 
           .input-group(v-if="!anonimo")
             label(for="email")
             | E-mail
             span.text-danger(v-if="mostrarAsteriscos") *
-            input(type="email" id="email" name="email" v-model="usuarioForm.email" @input="validateInputs" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
+            input(type="email" id="email" name="email" v-model="usuarioForm.email" @input="onValidateInputsChange" @blur="validations(usuarioForm, errorUser)" :disabled="anonimo || (usuarioLogado && !anonimo)" :readonly="usuarioLogado")
             span.error-message(v-if="errorUser.name==='email'") {{errorUser.message}}
 
       template(v-if="timeLine === 1")
@@ -272,15 +321,16 @@ const mostrarAsteriscos = computed(() => {
               type="text"
               id="cep"
               name="cep"
+              value="02360-00"
               v-model="denunciaForm.localDaOcorrencia.cep"
               maxlength="9"
               placeholder="Digite o CEP"
               required
-              @input="validateInputs"
+              @input="onValidateInputsChange"
             )
           .input-group
             label(for="logradouro") Logradouro
-            input(type="text" id="logradouro" name="logradouro" v-model="denunciaForm.localDaOcorrencia.logradouro" @input="validateInputs" required :disabled="true")
+            input(type="text" id="logradouro" name="logradouro" v-model="denunciaForm.localDaOcorrencia.logradouro" @input="onValidateInputsChange" required :disabled="true")
 
           .input-group
             label(for="bairro") Bairro
@@ -294,6 +344,9 @@ const mostrarAsteriscos = computed(() => {
             label(for="estado") Estado
             input(type="text" id="estado" v-model="denunciaForm.localDaOcorrencia.estado" required :disabled="true")
 
+
+
+      <!-- Dados do veículo -->
       template(v-if="timeLine === 2")
         .step-content(:class="{'active-step': etapas[1].avancar}")
 
@@ -301,59 +354,70 @@ const mostrarAsteriscos = computed(() => {
             label(for="tipoOcorrenciaId")
             | Tipo de Ocorrência
             span.text-danger() *
-            select(id="tipoOcorrenciaId" v-model="tipoOcorrencia" required)
+            select(id="tipoOcorrenciaId" required v-model="ocorrenciaType" @change="onTipoOcorrenciaChange") )
               option(value="" disabled selected) Selecione o Tipo de Ocorrência
-              option(v-for="tipo in artigos" :key="tipo.idArtigo" :value="tipo.idArtigo") {{ tipo.descricaoArtigo }}
+              option(v-for="tipo in ocorrenciaTypes" :key="tipo.id" :value="tipo.id") {{ tipo.description }}
 
 
           .input-group
             label(for="placa")
             | Placa do Veículo
             span.text-danger() *
-            input(type="text" id="placa" v-model="placa" required)
+            input(type="text" id="placa" name="placaVeiculo" v-model="veiculo.placaVeiculo" @input="validationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="8" )
+            .error-message(v-if="veiculo.error && veiculo.error.name === 'placa'") {{ veiculo.error.message }}
+
           .input-group
             label(for="ano")
-              | Ano do Veículo
-              span.text-danger() *
-            select(id="ano" v-model="ano" required)
-              option(value="" disabled selected) Selecione o ano
-              option(v-for="ano in anosDisponiveis" :key="ano" :value="ano") {{ ano }}
+            | Ano do Veículo
+            span.text-danger() *
+            input(type="text" id="ano" name="anoVeiculo" v-model="veiculo.anoVeiculo" @input="validationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="4" number min="1900" max="2999")
+            .error-message(v-if="veiculo.error && veiculo.error.name === 'ano'") {{ veiculo.error.message }}
 
           .input-group
             label(for="marca")
             | Marca
             span.text-danger() *
-            input(type="text" id="marca" v-model="marca" required)
+            input(type="text" id="marca" name="marcaVeiculo" v-model="veiculo.marcaVeiculo" @blur="validationVeiculoFocus" required)
+            .error-message(v-if="veiculo.error && veiculo.error.name === 'marca'") {{ veiculo.error.message }}
+
           .input-group
             label(for="modelo")
             | Modelo
             span.text-danger() *
-            input(type="text" id="modelo" v-model="modelo" required)
+            input(type="text" id="modelo" name="modeloVeiculo" v-model="veiculo.modeloVeiculo" @blur="validationVeiculoFocus" required)
+            .error-message(v-if="veiculo.error && veiculo.error.name === 'modelo'") {{ veiculo.error.message }}
+
           .input-group
             label(for="cor")
             | Cor
             span.text-danger() *
-            input(type="text" id="cor" v-model="cor" required)
+            input(type="text" id="cor" name="corVeiculo" v-model="veiculo.corVeiculo" @blur="validationVeiculoFocus" required)
+            .error-message(v-if="veiculo.error && veiculo.error.name === 'cor'") {{ veiculo.error.message }}
 
+
+      <!-- Descrição da ocorrência -->
       template(v-if="timeLine === 3")
         .step-content(:class="{'active-step': etapas[2].avancar}")
           .input-group
             label(for="dataOcorrencia")
             | Data da Ocorrência
             span.text-danger() *
-            input(type="date" id="dataOcorrencia" v-model="dataOcorrencia" required)
+            input(type="date" id="dataOcorrencia" name="dataOcorrencia" v-model="denunciaForm.dataOcorrencia" @blur="onValidateInputsChange" required)
+            .error-message(v-if="errorUser.name === 'dataOcorrencia'") {{ errorUser.message }}
 
           .input-group
             label(for="horaOcorrencia")
             | Hora da Ocorrência
             span.text-danger() *
-            input(type="time" id="horaOcorrencia" v-model="horaOcorrencia" required)
+            input(type="time" id="horaOcorrencia" name="dataHoraOcorrencia" v-model="denunciaForm.dataHoraOcorrencia" @blur="onValidateInputsChange" required)
+            .error-message(v-if="errorUser.name === 'dataHoraOcorrencia'") {{ errorUser.message }}
 
           .input-group
             label(for="descricao")
             | Descrição
             span.text-danger() *
-            textarea(id="descricao" v-model="descricao" required)
+            textarea(id="descricao" name="descricaoOcorrencia" v-model="denunciaForm.descricaoOcorrencia" @input="onValidateInputsChange" @blur="onValidateInputsChange" required)
+            .error-message(v-if="errorUser.name === 'descricaoOcorrencia'") {{ errorUser.message }}
 
       template(v-if="etapas[timeLine].valor === 5")
         .step-content(:class="{'active-step': etapas[timeLine].valor === 5}")
