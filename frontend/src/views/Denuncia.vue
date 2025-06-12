@@ -62,8 +62,10 @@ const veiculo = reactive<VeiculoProps>({ placaVeiculo: '' } as VeiculoProps) // 
 // Busca os dados do usuário autenticado
 const buscarUsuario = async () => {
   try {
-    await userService.findById(userAuth.id, denunciaForm.denunciante)
-    denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
+    if (userAuth.id) {
+      await userService.findById(userAuth.id, denunciaForm.denunciante)
+      denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
+    }
   } catch (error) {
     console.error('Erro ao buscar usuário:', error)
     toast.error('Erro ao buscar usuário. Verifique os dados e tente novamente.')
@@ -101,7 +103,7 @@ const timeLine = ref(0) // Referência para a linha do tempo
 // Função que altera a etapa atual
 const proximaEtapa = () => {
   if (timeLine.value < 4) {
-    timeLine.value++; // Agora são 5 etapas, de 1 a 5
+    timeLine.value++ // Agora são 5 etapas, de 1 a 5
   } else {
     enviarDenuncia()
   }
@@ -118,7 +120,7 @@ const voltar = () => {
 
 const progresso = computed(() => {
   // Total de 5 etapas: 0%, 25%, 50%, 75%, 100%
-  return ((etapas.filter((e) => e.avancar).length-1) / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
+  return ((etapas.filter((e) => e.avancar).length - 1) / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
 })
 
 /************************************************************
@@ -228,9 +230,7 @@ const onAlertasChange = () => {
 <template lang="pug">
 .template
   .denuncia
-    h1 Registrar Denúncia de Roubo ou Furto de Veículo timeLine
-    | TimeLine: {{timeLine}}
-    | Progresso: {{etapas[timeLine].valor}} - {{etapas[timeLine].avancar ? 'Avançar' : 'Não Avançar'}}
+    h1 Registrar Denúncia de Roubo ou Furto de Veículo
 
     // Linha do tempo
     .timeline
