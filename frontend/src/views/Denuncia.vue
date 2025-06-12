@@ -43,7 +43,7 @@ const ocorrenciaType = ref<OcorrenciaTypeProps>({} as OcorrenciaTypeProps) // Ti
 
 // Definindo os dados do formulário
 const anonimo = ref(false)
-const receberAlertas = ref(false) // valor padrão: não
+const receberAlertas = ref(true) // valor padrão: sim
 const anoAtual = new Date().getFullYear()
 const anosDisponiveis = ref<number[]>([])
 
@@ -164,6 +164,8 @@ const onValidationVeiculoInput = (event: Event) => {
   if (name === 'anoVeiculo') {
     veiculo.anoVeiculo = formatAno(value)
   }
+
+  veiculoService.validations(veiculo) // Valida os dados do veículo
 
   // Adiciona a validação do veículo
   denunciaForm.veiculos = [veiculo]

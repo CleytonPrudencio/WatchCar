@@ -40,7 +40,7 @@ export const getEtapa = (denuncia: DenunciaProps, etapas: EtapaProps[]) => {
       denuncia.veiculos[0].anoVeiculo &&
       denuncia.veiculos[0].marcaVeiculo &&
       denuncia.veiculos[0].modeloVeiculo &&
-      denuncia.veiculos[0].corVeiculo
+      denuncia.veiculos[0].corVeiculo && denuncia.veiculos[0].corVeiculo.length >= 3
     ) {
       etapas[2].avancar = true
     }
