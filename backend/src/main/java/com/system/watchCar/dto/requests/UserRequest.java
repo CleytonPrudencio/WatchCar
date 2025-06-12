@@ -19,9 +19,9 @@ public class UserRequest implements IUserSimple {
     private String userName;
     @NotBlank
     private String password;
-    @Email
+    @Email(message = "Email inválido")
     private String email;
-    @CPF
+    @CPF(message = "CPF inválido")
     private String cpf;
     private List<RoleDTO> roles = new ArrayList<>();
     private boolean activated = true;

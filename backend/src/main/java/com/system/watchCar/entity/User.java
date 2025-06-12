@@ -5,6 +5,7 @@ import com.system.watchCar.interfaces.IUserSimple;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -29,10 +30,12 @@ public class User implements IUserSimple, UserDetails {
     private String password;
 
     @Column(unique = true)
+    @Email(message = "Email inválido")
     private String email;
 
     // Adicionando os campos CPF e ALERTA
     @Column(unique = true, length = 11)
+    @CPF(message = "CPF inválido")
     private String cpf;
 
     private Boolean activated;

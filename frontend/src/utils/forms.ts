@@ -38,7 +38,7 @@ export const validations = (props: any, error: ErrorType): boolean => {
           error.message = 'Name must be at least 5 characters long'
         }
         break
-      case 'cpfs':
+      case 'cpf':
         if (!isValidCPF(value)) {
           error.name = 'cpf'
           error.message = 'CPF is not valid'
