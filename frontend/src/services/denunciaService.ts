@@ -1,11 +1,21 @@
 import type { DenunciaProps, EtapaProps } from '@/types/denuncia-type'
+import { toast } from 'vue3-toastify'
+
+export const save = async (denuncia: DenunciaProps) => {
+    toast.info('Salvando denúncia...')
+}
 
 export const getEtapa = (denuncia: DenunciaProps, etapas: EtapaProps[]) => {
   if (!denuncia) {
     return
   }
   if (denuncia.denunciante) etapas[0].avancar = false
-  if (denuncia.denunciante.name && denuncia.denunciante.email && denuncia.denunciante.cpf) {
+  if (
+    denuncia.denunciante.name &&
+    denuncia.denunciante.email &&
+    /.*@.*\.com$/.test(denuncia.denunciante.email) &&
+    denuncia.denunciante.cpf && denuncia.denunciante.cpf.length >= 11
+  ) {
     etapas[0].avancar = true
   }
 
@@ -37,13 +47,11 @@ export const getEtapa = (denuncia: DenunciaProps, etapas: EtapaProps[]) => {
   }
 
   // Descrição da ocorrência
-  if (denuncia.dataOcorrencia) {
+  if (denuncia.data) {
     etapas[3].avancar = false
     if (
-      denuncia.dataOcorrencia &&
-      /^\d{4}-\d{2}-\d{2}$/.test(denuncia.dataOcorrencia) &&
-      denuncia.dataHoraOcorrencia &&
-      /^\d{2}:\d{2}$/.test(denuncia.dataHoraOcorrencia) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(denuncia.data) &&
+      denuncia.dataHoraOcorrencia && /^\d{2}:\d{2}$/.test(denuncia.dataHoraOcorrencia) &&
       denuncia.descricaoOcorrencia && denuncia.descricaoOcorrencia.length >= 10
     ) {
       etapas[3].avancar = true

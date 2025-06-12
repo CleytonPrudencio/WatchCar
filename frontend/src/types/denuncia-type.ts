@@ -7,7 +7,7 @@ import type { VeiculoProps } from "./veiculo-type";
 export interface DenunciaProps{
 
   idOcorrencia: number;
-  dataOcorrencia: string;
+  data: string;
   descricaoOcorrencia: string;
   dataHoraOcorrencia: string;
 

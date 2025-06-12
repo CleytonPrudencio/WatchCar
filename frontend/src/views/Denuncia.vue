@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import * as authService from '@/services/auth-service'
 import * as denunciaService from '@/services/denunciaService'
-import { enviarDenuncia as enviarDenunciaService } from '@/services/ocorrenciasService'
 import * as ocorrenciaTypeService from '@/services/tipoOcorrenciaService'
 import * as userService from '@/services/userService'
 import * as veiculoService from '@/services/veiculoService'
@@ -32,6 +31,7 @@ const etapas = reactive<EtapaProps[]>([
   { valor: 2, avancar: false },
   { valor: 3, avancar: false },
   { valor: 4, avancar: false },
+  { valor: 5, avancar: true },
 ]) // Etapas do formulário
 const denunciaForm = reactive<DenunciaProps>({
   denunciante: usuarioForm,
@@ -43,7 +43,7 @@ const ocorrenciaType = ref<OcorrenciaTypeProps>({} as OcorrenciaTypeProps) // Ti
 
 // Definindo os dados do formulário
 const anonimo = ref(false)
-const receberAlertas = ref(true) // valor padrão: sim
+const receberAlertas = ref(false) // valor padrão: não
 const anoAtual = new Date().getFullYear()
 const anosDisponiveis = ref<number[]>([])
 
@@ -90,14 +90,6 @@ const onValidateInputsChange = async (event: Event) => {
   validations(usuarioForm, errorUser.value)
   denunciaForm.denunciante = usuarioForm // Atualiza o objeto denunciaForm com os dados do usuário
   denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
-
-  // Verifica se a etapa atual pode avançar
-  if (etapas[timeLine.value].avancar && etapas[timeLine.value].valor !== 4) {
-    setTimeout(() => {
-      const btn = document.querySelector('.btn-avancar') as HTMLButtonElement
-      if (btn) btn.focus()
-    }, 0)
-  }
 }
 
 /************************************************************
@@ -108,9 +100,8 @@ const onValidateInputsChange = async (event: Event) => {
 const timeLine = ref(0) // Referência para a linha do tempo
 // Função que altera a etapa atual
 const proximaEtapa = () => {
-  if (timeLine.value < 5) {
-    // Agora são 5 etapas, de 1 a 5
-    timeLine.value++
+  if (timeLine.value < 4) {
+    timeLine.value++; // Agora são 5 etapas, de 1 a 5
   } else {
     enviarDenuncia()
   }
@@ -122,13 +113,12 @@ const voltar = () => {
   if (timeLine.value > 0) {
     timeLine.value--
   }
-  console.log('Linha de tempo:', timeLine.value)
   denunciaService.getEtapa(denunciaForm, etapas) // Atualiza a etapa com os dados do formulário
 }
 
 const progresso = computed(() => {
   // Total de 5 etapas: 0%, 25%, 50%, 75%, 100%
-  return (etapas.filter((e) => e.avancar).length / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
+  return ((etapas.filter((e) => e.avancar).length-1) / 4) * 100 // Ajusta a porcentagem de acordo com a etapa
 })
 
 /************************************************************
@@ -160,7 +150,7 @@ const onTipoOcorrenciaChange = () => {
  *                Controle de veículos
  *
  ***********************************************************/
-const validationVeiculoInput = (event: Event) => {
+const onValidationVeiculoInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   const name = input.name
   const value = input.value
@@ -200,31 +190,8 @@ const validationVeiculoFocus = (event: Event) => {
  ***********************************************************/
 
 // Função para enviar a denúncia
-const enviarDenuncia = async () => {
-  try {
-    let idUsuario = null
-
-    // Se o usuário não for anônimo e estiver logado, usa o id do usuário
-    if (!anonimo.value && usuarioLogado.value) {
-      idUsuario = usuarioForm.id
-    } else if (anonimo.value) {
-      // Se for anônimo, o id será 1
-      idUsuario = 1
-    }
-
-    const denuncia = {
-      idUsuario: usuarioForm.id || 1, // Se o usuário estiver logado, pega o id, caso contrário, usa null
-      username: anonimo.value ? 'Anônimo' : usuarioForm.name,
-    }
-    store.startLoading() // Inicia o loading
-    await enviarDenunciaService(denuncia)
-    store.stopLoading() // Para o loading quando a ação terminar
-    toast.success('Denúncia registrada com sucesso!')
-    router.push({ name: 'inicio' })
-  } catch (error) {
-    store.stopLoading() // Para o loading quando a ação terminar
-    toast.error('Erro ao registrar denúncia. Verifique os dados e tente novamente.')
-  }
+const enviarDenuncia = () => {
+  toast.info('Registrando denúncia, aguarde...')
 }
 
 // Alterna a flag de anonimato
@@ -241,7 +208,6 @@ const toggleAnonimo = () => {
 onMounted(() => {
   buscarUsuario()
   carregarOcorrenciaType()
-  //carregarTiposOcorrencia()
   denunciaService.getEtapa(denunciaForm, etapas)
   for (let ano = anoAtual; ano >= anoAtual - 10; ano--) {
     anosDisponiveis.value.push(ano)
@@ -251,6 +217,10 @@ onMounted(() => {
 const mostrarAsteriscos = computed(() => {
   return String(usuarioForm.name).trim() !== ''
 })
+
+const onAlertasChange = () => {
+  receberAlertas.value = !receberAlertas.value
+}
 </script>
 
 <template lang="pug">
@@ -276,7 +246,7 @@ const mostrarAsteriscos = computed(() => {
       .step(:class="{ active: timeLine === 3, completed: etapas[3].avancar }")
         i.fas.fa-comment
         span Descrição
-      .step(:class="{ active: etapas[timeLine].valor === 5 }")
+      .step(:class="{ active: timeLine === 4, completed: timeLine === 4 }")
         i.fas.fa-check-circle
         span Finalizar
 
@@ -363,14 +333,14 @@ const mostrarAsteriscos = computed(() => {
             label(for="placa")
             | Placa do Veículo
             span.text-danger() *
-            input(type="text" id="placa" name="placaVeiculo" v-model="veiculo.placaVeiculo" @input="validationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="8" )
+            input(type="text" id="placa" name="placaVeiculo" v-model="veiculo.placaVeiculo" @input="onValidationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="8" )
             .error-message(v-if="veiculo.error && veiculo.error.name === 'placa'") {{ veiculo.error.message }}
 
           .input-group
             label(for="ano")
             | Ano do Veículo
             span.text-danger() *
-            input(type="text" id="ano" name="anoVeiculo" v-model="veiculo.anoVeiculo" @input="validationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="4" number min="1900" max="2999")
+            input(type="text" id="ano" name="anoVeiculo" v-model="veiculo.anoVeiculo" @input="onValidationVeiculoInput" @blur="validationVeiculoFocus" required maxlength="4" number min="1900" max="2999")
             .error-message(v-if="veiculo.error && veiculo.error.name === 'ano'") {{ veiculo.error.message }}
 
           .input-group
@@ -391,7 +361,7 @@ const mostrarAsteriscos = computed(() => {
             label(for="cor")
             | Cor
             span.text-danger() *
-            input(type="text" id="cor" name="corVeiculo" v-model="veiculo.corVeiculo" @blur="validationVeiculoFocus" required)
+            input(type="text" id="cor" name="corVeiculo" v-model="veiculo.corVeiculo" @blur="validationVeiculoFocus" @input="onValidationVeiculoInput" required)
             .error-message(v-if="veiculo.error && veiculo.error.name === 'cor'") {{ veiculo.error.message }}
 
 
@@ -402,7 +372,7 @@ const mostrarAsteriscos = computed(() => {
             label(for="dataOcorrencia")
             | Data da Ocorrência
             span.text-danger() *
-            input(type="date" id="dataOcorrencia" name="dataOcorrencia" v-model="denunciaForm.dataOcorrencia" @blur="onValidateInputsChange" required)
+            input(type="date" id="dataOcorrencia" name="dataOcorrencia" v-model="denunciaForm.data" @blur="onValidateInputsChange" required)
             .error-message(v-if="errorUser.name === 'dataOcorrencia'") {{ errorUser.message }}
 
           .input-group
@@ -419,8 +389,8 @@ const mostrarAsteriscos = computed(() => {
             textarea(id="descricao" name="descricaoOcorrencia" v-model="denunciaForm.descricaoOcorrencia" @input="onValidateInputsChange" @blur="onValidateInputsChange" required)
             .error-message(v-if="errorUser.name === 'descricaoOcorrencia'") {{ errorUser.message }}
 
-      template(v-if="etapas[timeLine].valor === 5")
-        .step-content(:class="{'active-step': etapas[timeLine].valor === 5}")
+      template(v-if="timeLine === 4")
+        .step-content(:class="{'active-step': etapas[3].avancar}")
           .termo-container
             h2 Termo de Envio de Denúncia
             p Ao prosseguir, você confirma que as informações fornecidas são verdadeiras e que entende as implicações legais da denúncia falsa.
@@ -428,7 +398,7 @@ const mostrarAsteriscos = computed(() => {
           .input-alertas(v-if="!anonimo")
             label(for="receberAlertas") Deseja receber alertas por e-mail sobre sua denúncia?
             .alertas-checkbox
-              input(type="checkbox" id="receberAlertas" v-model="receberAlertas")
+              input(type="checkbox" id="receberAlertas" :checked="receberAlertas" @change="onAlertasChange")
               span Receber alertas por e-mail
 
     .botoes
