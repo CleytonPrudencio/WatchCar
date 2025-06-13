@@ -1,8 +1,7 @@
-import type { UserAgenteProps, UserSimpleProps } from '@/types/user-type'
+import type { UserAgenteProps, UserSimpleProps, UsuarioGestorProps } from '@/types/user-type'
 import { requestBackEnd, requestWatchCar } from '@/utils/requests'
 import { CLIENT_ID, CLIENT_SECRET } from '@/utils/system'
 import type { AxiosRequestConfig } from 'axios'
-import { toast } from 'vue3-toastify'
 
 const url = '/api/users'
 
@@ -20,25 +19,37 @@ const findByEmail = async (email: string) => {
   return requestBackEnd(config)
 }
 
-export const findById = async (idUser: number, user: UserSimpleProps | undefined): Promise<UserAgenteProps> => {
+export const findById = async (idUser: number, user: UsuarioGestorProps | undefined): Promise<UsuarioGestorProps> => {
   try {
     // Validação do ID
     if (!idUser || idUser <= 0) {
-      return {} as UserAgenteProps;
+      return {} as UsuarioGestorProps;
     }
     // Fazendo a requisição
-    const response = await requestWatchCar().get<UserAgenteProps>(`${url}/${idUser}`)
+    const response = await requestWatchCar().get<UsuarioGestorProps>(`${url}/${idUser}`)
     // Validação da resposta
     if (!response.data) {
       throw new Error('Dados do usuário não encontrados na resposta')
     }
-    const userResponse = response.data as UserAgenteProps;
+    const userResponse = response.data as UsuarioGestorProps;
     if(user){
       user.id = userResponse.id
       user.name = userResponse.name
       user.email = userResponse.email
       user.cpf = userResponse.cpf
       user.ativo = userResponse.ativo
+      if (userResponse.roles && Array.isArray(userResponse.roles)) {
+        user.roles = [...userResponse.roles];
+      }
+      if(userResponse.ra) {
+        user.ra = userResponse.ra;
+        user.delegacia = userResponse.delegacia;
+        user.distintivo = userResponse.distintivo;
+      }
+      if(userResponse.departamento){
+        user.departamento = userResponse.departamento;
+        user.cargo = userResponse.cargo;
+      }
     }
     return userResponse;
   } catch (error) {
