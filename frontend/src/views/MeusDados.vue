@@ -1,3 +1,32 @@
+<script setup lang="ts">
+import * as authService from '@/services/auth-service'
+import * as userService from '@/services/userService'
+import type { AuthProps, UserAgenteProps, UserSimpleProps } from '@/types/user-type'
+import { onMounted, reactive, ref } from 'vue'
+import { toast } from 'vue3-toastify'
+
+const userAuth = reactive<AuthProps>(authService.getAccessToken()) // Obtém os dados do usuário autenticado
+const formData = reactive<UserAgenteProps>({} as UserAgenteProps)
+
+const showPassword = ref(false)
+const isReadonly = ref(true) // Define os campos como readonly inicialmente
+
+// Função para pegar dados do usuário e preencher o formulário
+const carregarDados = async () => {
+  userService.findById(userAuth.id, formData)
+}
+
+// Carregar os dados do usuário quando o componente for montado
+carregarDados()
+const containsError = (label: string) => {
+  return formData[label].error
+}
+
+onMounted(() => {
+  carregarDados()
+})
+</script>
+
 <template lang="pug">
   .meus-dados
     h2.titulo Editar Meus Dados
@@ -7,225 +36,32 @@
 
       // Nome, CPF e E-mail são comuns a todos os perfis
       label(for="nome") Nome Completo
-      input(type="text" id="nome" v-model="form.username" :readonly="isReadonly" required)
-      span.error-message(v-if="nomeError") {{ nomeError }}
+      input(type="text" id="nome" name="name" v-model="formData.name" :readonly="isReadonly" required)
+      span.error-message(v-if="containsError('name')") {{ formData.error.message }}
 
       label(for="cpf") CPF
-      input(type="text" id="cpf" v-model="form.cpf" maxlength="14" :readonly="isReadonly" required @input="formatarCPF")
-      span.error-message(v-if="cpfError") {{ cpfError }}
+      input(type="text" id="cpf" name="cpf" v-model="formData.cpf" maxlength="14" :readonly="isReadonly" required @input="formatarCPF")
+      span.error-message(v-if="containsError('cpf')") {{ formData.error.message }}
 
       label(for="email") E-mail
-      input(type="email" id="email" v-model="form.email" :readonly="isReadonly" required)
-      span.error-message(v-if="emailError") {{ emailError }}
+      input(type="email" id="email" name="email" v-model="formData.email" :readonly="isReadonly" required)
+      span.error-message(v-if="containsError('email')") {{ formData.error.message }}
 
       // Exibir o perfil atual com destaque
       div.perfil-atual
-        p Perfil Atual: 
-          span.profile-name {{ perfilAtual.nome || 'Nenhum perfil selecionado' }}
+        p Perfil Atual:
+        span.profile-name {{ formData.roles[0].authority || 'Nenhum perfil selecionado' }}
 
-      label(for="role") Perfil de Acesso
-      select#role(v-model="form.role")
-        option(v-for="(desc, key) in perfisDisponiveis" :key="key" :value="key")
-          | {{ desc.nome }}
 
-      // Descrição do perfil fora do select
-      .descricao-perfil(v-if="form.role")
-        pstrong Descrição:
-        p {{ perfisDisponiveis[form.role]?.descricao }}
-
-      // Exibir os campos dependendo do perfil selecionado
-      div.input-group(v-if="form.role === 'GESTOR_DE_SEGURANCA_PUBLICA'")
+      div.input-group(v-if="formData.departamento")
         label(for="departamento") Departamento
-        input(type="text" id="departamento" v-model="form.departamento" required)
-        span.error-message(v-if="departamentoError") {{ departamentoError }}
-
-      div.input-group(v-if="form.role === 'GESTOR_DE_SEGURANCA_PUBLICA'")
-        label(for="cargo") Cargo
-        input(type="text" id="cargo" v-model="form.cargo" required)
-        span.error-message(v-if="cargoError") {{ cargoError }}
-
-      div.input-group(v-if="form.role === 'POLICIAL' || form.role === 'AGENTE_DE_SEGURANCA' || form.role === 'INVESTIGADOR'")
-        label(for="delegacia") Delegacia
-        input(type="text" id="delegacia" v-model="form.delegate" required)
-        span.error-message(v-if="delegaciaError") {{ delegaciaError }}
-
-      div.input-group(v-if="form.role === 'POLICIAL' || form.role === 'AGENTE_DE_SEGURANCA' || form.role === 'INVESTIGADOR'")
-        label(for="distintivo") Distintivo
-        input(type="text" id="distintivo" v-model="form.badge" required)
-        span.error-message(v-if="distintivoError") {{ distintivoError }}
-
-      div.input-group(v-if="form.role === 'POLICIAL' || form.role === 'AGENTE_DE_SEGURANCA' || form.role === 'INVESTIGADOR'")
-        label(for="ra") RA
-        input(type="text" id="ra" v-model="form.ra" required)
-        span.error-message(v-if="raError") {{ raError }}
-
-      div.input-group.password-group
-        label(for="senha") Senha
-        div.password-wrapper
-          input(:type="showPassword ? 'text' : 'password'" id="senha" v-model="form.password" readonly required)
+        input(type="text" id="departamento" name="departamento" v-model="formData.departamento" required)
+        span.error-message(v-if="containsError('departamento')") {{ formData.error.message }}
 
       button(type="submit") Salvar
 
     .carregando(v-else) Carregando...
 </template>
-<script setup lang="ts">
-import { ref } from 'vue'
-import { toast } from 'vue3-toastify'
-import { fetchUserData, updateUserData } from '@/services/authService'
-
-// Tipagem para os valores possíveis de role
-type RoleType =
-  | 'PUBLICO'
-  | 'POLICIAL'
-  | 'AGENTE_DE_SEGURANCA'
-  | 'INVESTIGADOR'
-  | 'GESTOR_DE_SEGURANCA_PUBLICA'
-
-// Dados do formulário
-const form = ref({
-  id: '',
-  username: '',
-  cpf: '',
-  email: '',
-  role: '' as RoleType, // Agora `role` tem tipo explícito
-  departamento: '',
-  cargo: '',
-  delegate: '',
-  badge: '',
-  ra: '',
-  password: '',
-})
-
-const perfilAtual = ref({
-  nome: '',
-  descricao: '',
-})
-
-const showPassword = ref(false)
-const isReadonly = ref(true) // Define os campos como readonly inicialmente
-
-// Erros
-const nomeError = ref('')
-const cpfError = ref('')
-const emailError = ref('')
-const departamentoError = ref('')
-const cargoError = ref('')
-const delegaciaError = ref('')
-const distintivoError = ref('')
-const raError = ref('')
-
-// Perfis disponíveis com base no enum RoleType
-const perfisDisponiveis: Record<RoleType, { nome: string; descricao: string }> = {
-  PUBLICO: {
-    nome: 'Público',
-    descricao: 'Acesso restrito para o público em geral.',
-  },
-  POLICIAL: {
-    nome: 'Policial',
-    descricao:
-      'O Policial atua diretamente na linha de frente para garantir a segurança e a ordem pública.',
-  },
-  AGENTE_DE_SEGURANCA: {
-    nome: 'Agente de Segurança',
-    descricao: 'Responsável pela segurança e proteção de áreas e operações de segurança.',
-  },
-  INVESTIGADOR: {
-    nome: 'Investigador',
-    descricao: 'Responsável pela investigação de crimes e coleta de provas.',
-  },
-  GESTOR_DE_SEGURANCA_PUBLICA: {
-    nome: 'Gestor de Segurança Pública',
-    descricao:
-      'O Gestor de Segurança Pública é responsável pela administração e coordenação de operações relacionadas à segurança.',
-  },
-}
-
-// Função para pegar dados do usuário e preencher o formulário
-const carregarDados = async () => {
-  try {
-    const data = await fetchUserData() // Função para buscar os dados do usuário
-    form.value = { ...data, role: data.role.name as RoleType } // Atribuir 'role.name' à `form.role`
-
-    // Atualizando o perfil atual
-    perfilAtual.value = {
-      nome: perfisDisponiveis[form.value.role]?.nome || 'Nenhum perfil selecionado',
-      descricao: perfisDisponiveis[form.value.role]?.descricao || '',
-    }
-  } catch (error) {
-    toast.error('Erro ao carregar os dados do usuário.')
-  }
-}
-
-const roleToTipoMap: Record<RoleType, number> = {
-  PUBLICO: 1,
-  POLICIAL: 2,
-  AGENTE_DE_SEGURANCA: 3,
-  INVESTIGADOR: 4,
-  GESTOR_DE_SEGURANCA_PUBLICA: 5,
-}
-
-const salvarDados = async () => {
-  try {
-    const {
-      id,
-      username,
-      email,
-      cpf,
-      role, // role agora é uma string com tipo explícito
-      departamento,
-      cargo,
-      delegate,
-      badge,
-      ra,
-    } = form.value
-
-    const tipo = roleToTipoMap[role] // role agora é uma string com tipo explícito
-
-    if (tipo === undefined) {
-      toast.error('Perfil de acesso inválido.')
-      return
-    }
-
-    // Chama a função de atualização passando os dados individualmente
-    const response = await updateUserData(
-      id,
-      username,
-      email,
-      cpf,
-      tipo, // tipo é o valor de "role" convertido para número
-      departamento,
-      cargo,
-      delegate, // opcional
-      badge, // opcional
-      ra, // opcional
-    )
-
-    toast.success('Dados atualizados com sucesso!')
-
-    // Chama o carregarDados para atualizar o formulário
-    await carregarDados() // Recarregar os dados para refletir o novo perfil
-    window.location.reload()
-
-    // Adicionalmente, você pode forçar a reatividade para garantir que os campos
-    // sejam atualizados imediatamente, se necessário:
-    form.value = { ...form.value } // Isso força o Vue a detectar a mudança no objeto
-  } catch (error) {
-    toast.error('Erro ao salvar os dados.')
-  }
-}
-
-// Função para formatar o CPF
-const formatarCPF = () => {
-  let cpf = form.value.cpf.replace(/\D/g, '') // Remove todos os caracteres não numéricos
-  if (cpf.length <= 3) return (form.value.cpf = cpf)
-  if (cpf.length <= 6) return (form.value.cpf = cpf.replace(/(\d{3})(\d{1,})/, '$1.$2'))
-  if (cpf.length <= 9) return (form.value.cpf = cpf.replace(/(\d{3})(\d{3})(\d{1,})/, '$1.$2.$3'))
-  return (form.value.cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{1,})/, '$1.$2.$3-$4'))
-}
-
-// Carregar os dados do usuário quando o componente for montado
-carregarDados()
-</script>
 
 <style scoped>
 .meus-dados {
