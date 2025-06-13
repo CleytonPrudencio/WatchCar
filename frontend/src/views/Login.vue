@@ -41,15 +41,15 @@
 </template>
 
 <script setup lang="ts">
-import router from '@/router'
 import * as authService from '@/services/auth-service'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { UserLoginDTO } from '@/types/auth-type'
 import ForgotPasswordModal from '@/views/components/ForgotPasswordModal.vue'
 import axios from 'axios'
 import { onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 import { formatCPF, replaceNumbers, validations } from '../utils/forms'
-import type { UserLoginDTO } from '@/types/auth-type'
+import router from '@/router'
 
 const store = useLoadingStore()
 
@@ -103,11 +103,9 @@ const handleLogin = async (event) => {
   await authService
     .loginRequest(formData)
     .then(async (response) => {
-      authService.saveAccessToken(response.data.access_token);
+      authService.saveAccessToken(response.data.access_token)
       toast.success('Login realizado com sucesso!')
-      await window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
-      window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
-      //router.push('/denuncia') // Redireciona para a denúncia após o login bem-sucedido
+      router.push('/denuncia') // Redireciona para a denúncia após o login bem-sucedido
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {
