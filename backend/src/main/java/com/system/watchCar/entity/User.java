@@ -38,7 +38,7 @@ public class User implements IUserSimple, UserDetails {
     @CPF(message = "CPF inválido")
     private String cpf;
 
-    private Boolean activated;
+    private boolean userActivated;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role",
@@ -111,13 +111,13 @@ public class User implements IUserSimple, UserDetails {
 
     @Override
     public User setUserActivated(boolean active) {
-        this.activated = active;
+        this.userActivated = active;
         return this;
     }
 
     @Override
     public boolean getUserActivated() {
-        return activated;
+        return userActivated;
     }
 
     @Override

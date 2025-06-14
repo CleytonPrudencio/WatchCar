@@ -6,6 +6,7 @@ import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.response.UserResponse;
 import com.system.watchCar.dto.response.UserSimpleResponse;
+import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.interfaces.IUserSimple;
 import com.system.watchCar.service.UserService;
 import jakarta.validation.Valid;
@@ -27,8 +28,8 @@ public class UserController implements UserOpenApi {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<IUserSimple> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.findById(id).toUserSimple(UserResponse.class));
+    public ResponseEntity<IGestorSecurity> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping

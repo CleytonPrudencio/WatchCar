@@ -9,10 +9,13 @@ import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.AuthDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.response.TokenResponseDTO;
+import com.system.watchCar.dto.response.UserProjection;
+import com.system.watchCar.dto.response.UserResponse;
 import com.system.watchCar.dto.response.UserSimpleResponse;
 import com.system.watchCar.entity.User;
 import com.system.watchCar.entity.UserAgente;
 import com.system.watchCar.entity.UserGestor;
+import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.interfaces.IUserSimple;
 import com.system.watchCar.repository.RoleRepository;
 import com.system.watchCar.repository.UserAgenteRepository;
@@ -34,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -119,11 +123,14 @@ public class UserService implements IAuthService {
     }
 
     @Transactional(readOnly = true)
-    public IUserSimple findById(Long id) {
-        if(id == null) {
+    public IGestorSecurity findById(Long id) {
+        if (id == null) {
             throw new UserExecption("User ID cannot be null");
         }
-        return userRepository.findById(id).orElseThrow(()-> new UserExecption("User not found with ID: " + id));
+        List<UserProjection> list = userRepository.searchById(id);
+        Msg.System("user: "+ list.get(0).print(), getClass());
+
+        return list.get(0).toGestor();
     }
 
     @Transactional(readOnly = true)
@@ -160,7 +167,7 @@ public class UserService implements IAuthService {
                     .build()
                     .verify(token)
                     .getSubject();
-        }catch (JWTVerificationException e){
+        } catch (JWTVerificationException e) {
             throw new UserExecption("Token inválido ou expirado: " + e.getMessage());
         }
     }
@@ -168,7 +175,7 @@ public class UserService implements IAuthService {
     @Override
     public TokenResponseDTO obterRefreshToken(String refreshToken) {
         String login = validaTokenJwt(refreshToken);
-        User usuario = userRepository.findByCpf(login).orElseThrow(()-> new UserExecption("Usuário não encontrado com o CPF: " + login));
+        User usuario = userRepository.findByCpf(login).orElseThrow(() -> new UserExecption("Usuário não encontrado com o CPF: " + login));
 
         var autentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
 

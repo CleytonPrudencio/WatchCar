@@ -2,9 +2,9 @@ package com.system.watchCar.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.system.watchCar.dto.RoleDTO;
-import com.system.watchCar.entity.Role;
-import com.system.watchCar.entity.User;
+import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.interfaces.IResponseOK;
 import com.system.watchCar.interfaces.IRole;
 import com.system.watchCar.interfaces.IUserSimple;
@@ -12,32 +12,28 @@ import com.system.watchCar.interfaces.IUserSimple;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserResponse implements IUserSimple, IResponseOK {
+public class UserResponse implements IGestorSecurity, IResponseOK {
 
     private Long idUser;
-    private String name;
+    private String userName;
     @JsonIgnore
     private String password;
     private String email;
     private String cpf;
     private boolean ativo;
+
     private List<RoleDTO> roles = new ArrayList<>();
 
+    // Dados do Agente
+    private String delegate;
+    private String badge;
+    private String ra;
+
+    // Dados do Gestor
+    private String department;
+    private String cargo;
+
     public UserResponse() {
-    }
-
-    public UserResponse(User entity) {
-        this.idUser = entity.getIdUser();
-        this.name = entity.getUserName();
-        this.password = entity.getPassword();
-        this.email = entity.getEmail();
-        this.cpf = entity.getCpf();
-
-        if (entity.getRoles() != null) {
-            for (Role role : entity.getRoles()) {
-                roles.add(new RoleDTO(role.getIdRole(), role.getAuthority()));
-            }
-        }
     }
 
     @Override
@@ -54,14 +50,14 @@ public class UserResponse implements IUserSimple, IResponseOK {
 
     @Override
     public UserResponse setUserName(String username) {
-        this.name = username;
+        this.userName = username;
         return this;
     }
 
     @JsonProperty("name")
     @Override
     public String getUserName() {
-        return name;
+        return userName;
     }
 
     @Override
@@ -123,5 +119,60 @@ public class UserResponse implements IUserSimple, IResponseOK {
     @Override
     public boolean getSuccess() {
         return !email.isBlank();
+    }
+
+    @Override
+    public UserResponse setDelegate(String delegate) {
+        this.delegate = delegate;
+        return this;
+    }
+
+    @Override
+    public String getDelegate() {
+        return delegate;
+    }
+
+    @Override
+    public UserResponse setBadge(String badge) {
+        this.badge = badge;
+        return this;
+    }
+
+    @Override
+    public String getBadge() {
+        return badge;
+    }
+
+    @Override
+    public UserResponse setRa(String ra) {
+        this.ra = ra;
+        return this;
+    }
+
+    @Override
+    public String getRa() {
+        return ra;
+    }
+
+    @Override
+    public UserResponse setDepartment(String department) {
+        this.department = department;
+        return this;
+    }
+
+    @Override
+    public String getDepartment() {
+        return department;
+    }
+
+    @Override
+    public String getCargo() {
+        return cargo;
+    }
+
+    @Override
+    public UserResponse setCargo(String cargo) {
+        this.cargo = cargo;
+        return this;
     }
 }
