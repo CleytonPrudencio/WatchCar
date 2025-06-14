@@ -47,4 +47,17 @@ public interface IUserSimple {
             throw new UserExecption("Error converting to "+ clazz.getSimpleName());
         }
     }
+
+    default String print(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("UserSimple{")
+          .append("idUser=").append(getIdUser())
+          .append(", userName='").append(getUserName()).append('\'')
+          .append(", email='").append(getEmail()).append('\'')
+          .append(", cpf='").append(getCpf()).append('\'')
+          .append(", userActivated=").append(getUserActivated())
+          .append(", roles=").append(getRoles())
+          .append('}');
+        return sb.toString();
+    }
 }
