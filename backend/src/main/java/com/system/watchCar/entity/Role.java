@@ -11,7 +11,7 @@ public class Role implements IRole{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long roleId;
+    private Long idRole;
     private String authority;
 
     public Role() {
@@ -19,13 +19,13 @@ public class Role implements IRole{
 
     @Override
     public Role setIdRole(Long roleId) {
-        this.roleId = roleId;
+        this.idRole = roleId;
         return this;
     }
 
     @Override
     public Long getIdRole() {
-        return roleId;
+        return idRole;
     }
 
     @Override
