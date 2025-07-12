@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(nativeQuery = true, value = """
             SELECT * FROM TB_USER U
             INNER JOIN TB_USER_ROLE UR ON UR.USER_ID = U.ID_USER
-            INNER JOIN TB_ROLE R ON R.ROLE_ID = UR.ROLE_ID
+            INNER JOIN TB_ROLE R ON R.ID_ROLE = UR.ROLE_ID
             LEFT JOIN TB_USER_AGENTE A ON A.USER_ID = U.ID_USER
             LEFT JOIN TB_USER_GESTOR G ON G.USER_ID = U.ID_USER
             WHERE U.ID_USER = :id
