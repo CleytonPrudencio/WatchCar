@@ -18,7 +18,7 @@ const carregarDados = async () => {
 // Carregar os dados do usuário quando o componente for montado
 carregarDados()
 const containsError = (label: string) => {
-  return !!(formData[label]?.error)
+  return !!formData[label]?.error
 }
 
 onMounted(() => {
@@ -47,15 +47,28 @@ onMounted(() => {
       span.error-message(v-if="containsError('email')") {{ formData.error.message }}
 
       // Exibir o perfil atual com destaque
-      div.perfil-atual
+      div.perfil-atual(v-if="formData.roles && formData.roles.length > 0")
         p Perfil Atual:
-        span.profile-name {{ formData.roles[0].authority || 'Nenhum perfil selecionado' }}
+        // percorrer os perfis do usuário
+        p.profile-name(v-for="role in formData.roles" :key="role.idRole") {{ role.authority }}
 
 
       div.input-group(v-if="formData.departamento")
         label(for="departamento") Departamento
         input(type="text" id="departamento" name="departamento" v-model="formData.departamento" required)
         span.error-message(v-if="containsError('departamento')") {{ formData.error.message }}
+
+      div.input-group(v-if="formData.delegacia")
+        label(for="delegacia") Delegacia
+        input(type="text" id="delegacia" v-model="formData.delegacia" required)
+
+      div.input-group(v-if="formData.distintivo")
+        label(for="distintivo") Distintivo
+        input(type="text" id="distintivo" v-model="formData.distintivo" required)
+
+      div.input-group(v-if="formData.ra")
+        label(for="ra") RA
+        input(type="text" id="ra" v-model="formData.ra" required)
 
       button(type="submit") Salvar
 
