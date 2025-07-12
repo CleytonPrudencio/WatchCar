@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import * as authService from '@/services/auth-service'
 import * as userService from '@/services/userService'
-import type { AuthProps, UserAgenteProps, UserSimpleProps } from '@/types/user-type'
+import type { AuthProps, UserAgenteProps } from '@/types/user-type'
 import { onMounted, reactive, ref } from 'vue'
-import { toast } from 'vue3-toastify'
 
-const userAuth = reactive<AuthProps>(authService.getAccessToken()) // Obtém os dados do usuário autenticado
+const userAuth = reactive<AuthProps>(authService.getAuth()) // Obtém os dados do usuário autenticado
 const formData = reactive<UserAgenteProps>({} as UserAgenteProps)
 
 const showPassword = ref(false)
@@ -19,7 +18,7 @@ const carregarDados = async () => {
 // Carregar os dados do usuário quando o componente for montado
 carregarDados()
 const containsError = (label: string) => {
-  return formData[label].error
+  return !!(formData[label]?.error)
 }
 
 onMounted(() => {
@@ -37,7 +36,7 @@ onMounted(() => {
       // Nome, CPF e E-mail são comuns a todos os perfis
       label(for="nome") Nome Completo
       input(type="text" id="nome" name="name" v-model="formData.name" :readonly="isReadonly" required)
-      span.error-message(v-if="containsError('name')") {{ formData.error.message }}
+      span.error-message(v-if="containsError('email')") {{ formData.error.message }}
 
       label(for="cpf") CPF
       input(type="text" id="cpf" name="cpf" v-model="formData.cpf" maxlength="14" :readonly="isReadonly" required @input="formatarCPF")

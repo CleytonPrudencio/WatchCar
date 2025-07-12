@@ -1,5 +1,5 @@
 import type { UserAgenteProps, UserSimpleProps, UsuarioGestorProps } from '@/types/user-type'
-import { requestBackEnd, requestWatchCar } from '@/utils/requests'
+import { requestBackEnd, requestWatchCar, requestWatchCarWithToken } from '@/utils/requests'
 import { CLIENT_ID, CLIENT_SECRET } from '@/utils/system'
 import type { AxiosRequestConfig } from 'axios'
 
@@ -19,14 +19,14 @@ const findByEmail = async (email: string) => {
   return requestBackEnd(config)
 }
 
-export const findById = async (idUser: number, user: UsuarioGestorProps | undefined): Promise<UsuarioGestorProps> => {
+export const findById = async (idUser: number, user: UsuarioGestorProps): Promise<UsuarioGestorProps> => {
   try {
     // Validação do ID
     if (!idUser || idUser <= 0) {
       return {} as UsuarioGestorProps;
     }
     // Fazendo a requisição
-    const response = await requestWatchCar().get<UsuarioGestorProps>(`${url}/${idUser}`)
+    const response = await requestWatchCarWithToken().get<UsuarioGestorProps>(`${url}/${idUser}`)
     // Validação da resposta
     if (!response.data) {
       throw new Error('Dados do usuário não encontrados na resposta')

@@ -221,7 +221,7 @@ export const validaPassword = (passsword: string, confirmPassword: string): bool
 }
 
 const isNullOrEmpty = (value: string): boolean => {
-  return value === null || value.trim() === '' || value === undefined
+  return value === null || value === undefined || value.trim() === ''
 }
 const isTextSize = (value: string, length: number): boolean => {
   return value.length == length

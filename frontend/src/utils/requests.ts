@@ -6,7 +6,7 @@ export function requestBackEnd(config: AxiosRequestConfig) {
   const headers = config.withCredentials
     ? {
         ...config.headers,
-        Authorization: 'Bearer ' + authService.getAccessToken(),
+        Authorization: 'Bearer ' + authService.getAuth(),
       }
     : config.headers
   return axios({ ...config, headers, baseURL: BASE_URL })
@@ -29,7 +29,7 @@ export function requestWatchCar() {
 export function requestWatchCarWithToken() {
   const headers = {
     'Content-Type': 'application/json',
-    Authorization: 'Bearer ' + authService.getAccessToken()
+    Authorization: 'Bearer ' + authService.getAuth().token
   }
   const config: AxiosRequestConfig = {
     headers,

@@ -32,7 +32,7 @@ export const registerRequest = (data: any) => {
   return requestBackEnd(config);
 }
 
-export function getAccessToken(): AuthProps {
+export function getAuth(): AuthProps {
   return accessTokenRepository.getKeys();
 }
 

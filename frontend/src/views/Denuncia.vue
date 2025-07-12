@@ -24,7 +24,7 @@ import { toast } from 'vue3-toastify'
 const store = useLoadingStore()
 const router = useRouter()
 
-const userAuth = reactive<AuthProps>(authService.getAccessToken()) // Obtém os dados do usuário autenticado
+const userAuth = reactive<AuthProps>(authService.getAuth()) // Obtém os dados do usuário autenticado
 const usuarioForm = reactive<UserSimpleProps>({} as UserSimpleProps)
 const etapas = reactive<EtapaProps[]>([
   { valor: 1, avancar: false },
