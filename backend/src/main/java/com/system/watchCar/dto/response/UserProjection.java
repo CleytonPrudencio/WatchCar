@@ -7,6 +7,11 @@ import com.system.watchCar.interfaces.IRole;
 
 public interface UserProjection extends IGestorSecurity, IRole, IResponseOK {
 
+    @Override
+    default boolean getSuccess() {
+        return !getEmail().isBlank();
+    }
+
     default IGestorSecurity toGestor() {
         IGestorSecurity user = new UserResponse();
         user.setIdUser(getIdUser());

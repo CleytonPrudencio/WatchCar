@@ -128,9 +128,11 @@ public class UserService implements IAuthService {
             throw new UserExecption("User ID cannot be null");
         }
         List<UserProjection> list = userRepository.searchById(id);
-        Msg.System("user: "+ list.get(0).print(), getClass());
-
-        return list.get(0).toGestor();
+        if(list.isEmpty()){
+            throw new UserExecption("User not found with ID: " + id);
+        }
+        UserResponse user = list.get(0).toGestor().toGestor(UserResponse.class);
+        return user;
     }
 
     @Transactional(readOnly = true)
