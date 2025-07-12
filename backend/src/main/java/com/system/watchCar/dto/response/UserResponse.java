@@ -127,6 +127,7 @@ public class UserResponse implements IGestorSecurity, IResponseOK {
         return this;
     }
 
+    @JsonProperty("delegacia")
     @Override
     public String getDelegate() {
         return delegate;
@@ -138,6 +139,7 @@ public class UserResponse implements IGestorSecurity, IResponseOK {
         return this;
     }
 
+    @JsonProperty("distintivo")
     @Override
     public String getBadge() {
         return badge;
@@ -160,6 +162,7 @@ public class UserResponse implements IGestorSecurity, IResponseOK {
         return this;
     }
 
+    @JsonProperty("departamento")
     @Override
     public String getDepartment() {
         return department;
