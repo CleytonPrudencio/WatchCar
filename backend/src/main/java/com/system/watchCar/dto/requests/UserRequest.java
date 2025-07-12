@@ -19,12 +19,12 @@ public class UserRequest implements IUserSimple {
     private String userName;
     @NotBlank
     private String password;
-    @Email
+    @Email(message = "Email inválido")
     private String email;
-    @CPF
+    @CPF(message = "CPF inválido")
     private String cpf;
     private List<RoleDTO> roles = new ArrayList<>();
-    private Boolean activated = true;
+    private boolean activated = true;
 
     @Override
     public UserRequest setIdUser(Long id) {
@@ -91,7 +91,7 @@ public class UserRequest implements IUserSimple {
 
     @JsonProperty("ativo")
     @Override
-    public Boolean getUserActivated() {
+    public boolean getUserActivated() {
         return activated;
     }
 

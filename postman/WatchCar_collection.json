@@ -1,0 +1,351 @@
+{
+	"info": {
+		"_postman_id": "dae2687b-6c60-4166-9419-18b18b9958bb",
+		"name": "WatchCar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15802113"
+	},
+	"item": [
+		{
+			"name": "Local",
+			"item": [
+				{
+					"name": "CEP",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cep\": \"02323000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/cep",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"cep"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TipoOcorrencia",
+			"item": [
+				{
+					"name": "TipoOcorrencia All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/tipos_ocorrencias",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"tipos_ocorrencias"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ocorrencia",
+			"item": [
+				{
+					"name": "Ocorrencia Save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"data\": \"2025-06-02\",\r\n  \"descricao\": \"Primeiro teste de ocorrência\",\r\n  \"dataHora\": \"2025-06-02T19:15:54.565Z\",\r\n  \"local\": {\r\n    \"logradouro\": \"Rua Manoel Pereira Rosa, 289\",\r\n    \"bairro\": \"Jardim Fontalis\",\r\n    \"cidade\": \"São Paulo\",\r\n    \"estado\": \"São Paulo\",\r\n    \"cep\": \"02360001\"\r\n  },\r\n  \"idResponsavel\": 1,\r\n  \"denunciante\": {\r\n    \"password\": \"123456\",\r\n    \"email\": \"luanna@gmail.com\",\r\n    \"cpf\": \"11122233312\",\r\n    \"roles\": [\r\n      {\r\n        \"authority\": \"string\",\r\n        \"idRole\": 3\r\n      }\r\n    ],\r\n    \"name\": \"Luanna Paz\",\r\n    \"ativo\": true\r\n  },\r\n  \"localOcorrencia\": {\r\n    \"logradouro\": \"Rua Boa Vista\",\r\n    \"bairro\": \"Jardim das Pedras\",\r\n    \"cidade\": \"São Paulo\",\r\n    \"estado\": \"São Paulo\",\r\n    \"cep\": \"02323000\"\r\n  },\r\n  \"veiculos\": [\r\n    {\r\n      \"marca\": \"Fiat\",\r\n      \"modelo\": \"Uno\",\r\n      \"ano\": 2009,\r\n      \"placa\": \"ABX1253\",\r\n      \"cor\": \"Preto\",\r\n      \"tipo\": \"CARRO\"\r\n    }\r\n  ],\r\n  \"idArtigo\": 2,\r\n  \"tipo\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/ocorrencias/criar",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"ocorrencias",
+								"criar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Artigo",
+			"item": [
+				{
+					"name": "Artigos All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/artigos",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"artigos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usuario",
+			"item": [
+				{
+					"name": "Usuario ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/users/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "WatchCar Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 200 && responseCode.code < 300) {\r",
+									"   var json = JSON.parse(responseBody);\r",
+									"   postman.setEnvironmentVariable('token', json.access_token);\r",
+									"} else{\r",
+									"    postman.setEnvironmentVariable('token', '')\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{client-secret}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{client-id}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"cpf\": \"12345678909\",\r\n  \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/auth/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "WatchCar Login Luanna",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code >= 200 && responseCode.code < 300) {\r",
+									"   var json = JSON.parse(responseBody);\r",
+									"   postman.setEnvironmentVariable('token', json.access_token);\r",
+									"} "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{client-secret}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{client-id}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{host}}/auth/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/roles",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Car Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \r\n  \"name\": \"Elder Barbosa\",\r\n  \"password\": \"123456\",\r\n  \"email\": \"elder@gmail.com\",\r\n  \"cpf\": \"32266188810\",\r\n  \"roles\": [\r\n    {\r\n      \"idRole\": 2\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/users/register",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WatchCar Test",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}",
+					"host": [
+						"{{host}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WatchCar Find ID",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/users/1",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

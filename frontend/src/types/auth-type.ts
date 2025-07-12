@@ -1,9 +1,4 @@
-export type CredentialsDTO = {
-  username: string;
-  password: string;
-};
-
-export type UserCpfWithPasswordDTO = {
+export type UserLoginDTO = {
   cpf: string;
   password: string;
 };

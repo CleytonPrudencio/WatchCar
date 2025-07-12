@@ -1,37 +1,45 @@
-import QueryString from 'qs';
-import type { CredentialsDTO } from '@/types/auth-type';
-import axios, { type AxiosRequestConfig } from 'axios'
-import { requestBackEnd } from '@/utils/requests';
 import * as accessTokenRepository from "@/localstorage/access-token-repository";
+import type { UserLoginDTO } from "@/types/auth-type";
+import type { AuthProps } from "@/types/user-type";
+import { requestBackEnd } from '@/utils/requests';
 import { CLIENT_ID, CLIENT_SECRET } from "@/utils/system";
+import { type AxiosRequestConfig } from 'axios';
 
-export const loginRequest = (loginData: CredentialsDTO) => {
-
+export const loginRequest = (loginData: UserLoginDTO) => {
   const headers = {
-    "Content-Type": "application/x-www-form-urlencoded",
-    Authorization: "Basic " + btoa(CLIENT_ID + ":" + CLIENT_SECRET),
+    "Content-Type": "application/json"
   };
-  const requestBody = QueryString.stringify({
-    ...loginData,
-    grant_type: "password",
-  });
   const config: AxiosRequestConfig = {
     method: "POST",
-    url: "/oauth2/token",
+    url: "/api/auth/login",
     headers,
-    data: requestBody,
+    data: loginData,
   };
   return requestBackEnd(config);
 }
 
-export function getAccessToken() {
-  return accessTokenRepository.get();
+export const registerRequest = (data: any) => {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: "Basic " + btoa(CLIENT_ID + ":" + CLIENT_SECRET),
+  };
+  const config: AxiosRequestConfig = {
+    method: "POST",
+    url: "/api/users/register",
+    headers,
+    data: data,
+  };
+  return requestBackEnd(config);
+}
+
+export function getAuth(): AuthProps {
+  return accessTokenRepository.getKeys();
 }
 
 export function logout() {
-  accessTokenRepository.remove();
+  accessTokenRepository.removeToken();
 }
 
 export function saveAccessToken(token: string) {
-  accessTokenRepository.save(token);
+  accessTokenRepository.saveToken(token);
 }

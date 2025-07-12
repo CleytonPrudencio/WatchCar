@@ -5,14 +5,16 @@ import com.system.watchCar.dto.RoleDTO;
 import com.system.watchCar.dto.UserDTO;
 import com.system.watchCar.dto.requests.UserGestorRequest;
 import com.system.watchCar.dto.response.UserSimpleResponse;
+import com.system.watchCar.interfaces.IGestorSecurity;
 import com.system.watchCar.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController implements UserOpenApi {
 
     @Autowired
@@ -24,10 +26,10 @@ public class UserController implements UserOpenApi {
         return ResponseEntity.ok(createdUser);
     }
 
-    @GetMapping(value = "/me")
-    public ResponseEntity<UserDTO> getMe() {
-        UserDTO dto = service.getMe();
-        return ResponseEntity.ok(dto);
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{id}")
+    public ResponseEntity<IGestorSecurity> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping

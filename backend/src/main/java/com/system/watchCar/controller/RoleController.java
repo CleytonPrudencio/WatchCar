@@ -1,23 +1,24 @@
 package com.system.watchCar.controller;
 
-import com.system.watchCar.dto.response.Response;
-import com.system.watchCar.service.TipoOcorrenciaService;
+import com.system.watchCar.dto.RoleDTO;
+import com.system.watchCar.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/tipos_ocorrencias")
-public class TipoOcorrenciaController {
+@RequestMapping("/api/roles")
+public class RoleController {
 
     @Autowired
-    private TipoOcorrenciaService tipoOcorrenciaService;
+    private RoleService roleService;
 
     @GetMapping
-    public ResponseEntity<Response> findAll() {
-        return ResponseEntity.ok(tipoOcorrenciaService.findAll());
+    public ResponseEntity<List<RoleDTO>> findAll(){
+        return ResponseEntity.ok(roleService.findAll());
     }
-
 }

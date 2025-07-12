@@ -43,21 +43,17 @@
 <script setup lang="ts">
 import * as authService from '@/services/auth-service'
 import { useLoadingStore } from '@/stores/loadingStore'
+import type { UserLoginDTO } from '@/types/auth-type'
 import ForgotPasswordModal from '@/views/components/ForgotPasswordModal.vue'
 import axios from 'axios'
 import { onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue3-toastify'
-import { formatCPF, replaceNumbers, validations } from '../utils/form'
+import { formatCPF, replaceNumbers, validations } from '../utils/forms'
 import router from '@/router'
 
 const store = useLoadingStore()
 
-interface LoginProps {
-  cpf: string
-  password: string
-}
-
-const formData = reactive<LoginProps>({} as LoginProps)
+const formData = reactive<UserLoginDTO>({} as UserLoginDTO)
 const error = ref({ name: '', message: '' })
 const showPassword = ref(false)
 const forgotPasswordModal = ref<InstanceType<typeof ForgotPasswordModal> | null>(null)
@@ -102,14 +98,14 @@ const handleLogin = async (event) => {
     return
   }
 
+  formData.cpf = replaceNumbers(formData.cpf) // Formata o CPF antes de enviar
+
   await authService
-    .loginRequest({ username: replaceNumbers(formData.cpf), password: formData.password })
-    .then((response) => {
+    .loginRequest(formData)
+    .then(async (response) => {
       authService.saveAccessToken(response.data.access_token)
       toast.success('Login realizado com sucesso!')
-      window.dispatchEvent(new Event('storage')) // Dispara o evento de storage para atualizar o estado global
-      router.push('/ocorrencias') // Redireciona para o dashboard após o login
-      window.location.reload() // Recarrega a página para garantir que o estado seja atualizado
+      router.push('/denuncia') // Redireciona para a denúncia após o login bem-sucedido
     })
     .catch((error) => {
       if (axios.isAxiosError(error) && error.response) {

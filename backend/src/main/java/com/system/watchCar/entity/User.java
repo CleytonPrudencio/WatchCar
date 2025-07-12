@@ -5,6 +5,7 @@ import com.system.watchCar.interfaces.IUserSimple;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -28,15 +29,16 @@ public class User implements IUserSimple, UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Email
     @Column(unique = true)
+    @Email(message = "Email inválido")
     private String email;
 
     // Adicionando os campos CPF e ALERTA
     @Column(unique = true, length = 11)
+    @CPF(message = "CPF inválido")
     private String cpf;
 
-    private Boolean activated;
+    private boolean userActivated;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_user_role",
@@ -109,13 +111,13 @@ public class User implements IUserSimple, UserDetails {
 
     @Override
     public User setUserActivated(boolean active) {
-        this.activated = active;
+        this.userActivated = active;
         return this;
     }
 
     @Override
-    public Boolean getUserActivated() {
-        return activated;
+    public boolean getUserActivated() {
+        return userActivated;
     }
 
     @Override
